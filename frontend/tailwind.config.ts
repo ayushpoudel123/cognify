@@ -1,7 +1,7 @@
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
-  darkMode: ['class'],
+  darkMode: 'class', // keep class-based but default to light
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -13,30 +13,47 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#3B82F6', // Vibrant modern blue
-          hover: '#2563EB',
-          light: '#EFF6FF',
-          dark: '#1E40AF',
+          DEFAULT: '#1877F2', // Facebook blue
+          hover: '#166FE5',
+          light: '#E7F3FF',
+          dark: '#0C5AB4',
         },
         secondary: {
-          DEFAULT: '#8B5CF6',
-          hover: '#7C3AED',
-          light: '#F5F3FF',
+          DEFAULT: '#42B72A', // Facebook green
+          hover: '#36A420',
+          light: '#E6F4E2',
         },
-        background: '#0B0F19', // Deep sleek dark background
+        background: '#F0F2F5',   // Facebook page background
         surface: {
-          DEFAULT: '#111827',
-          hover: '#1F2937',
-          border: '#1F2937',
+          DEFAULT: '#FFFFFF',    // White card background
+          hover: '#F2F2F2',
+          border: '#E4E6EB',     // Subtle light border
+          muted: '#F7F8FA',
+        },
+        text: {
+          primary: '#050505',    // Near-black
+          secondary: '#65676B',  // Medium gray
+          muted: '#8A8D91',      // Light gray
         },
         accent: {
-          pink: '#EC4899',
-          emerald: '#10B981',
-          amber: '#F59E0B',
+          pink: '#E4006C',
+          emerald: '#00A854',
+          amber: '#F5A623',
+          red: '#FA3E3E',
         },
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      boxShadow: {
+        card: '0 1px 2px rgba(0,0,0,0.08)',
+        'card-hover': '0 4px 12px rgba(0,0,0,0.10)',
+        'float': '0 8px 24px rgba(0,0,0,0.12)',
+      },
+      borderRadius: {
+        xl: '12px',
+        '2xl': '16px',
+        '3xl': '20px',
       },
     },
   },

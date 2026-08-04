@@ -1,7 +1,7 @@
-import { Controller, Get, Patch, Param, UseGuards, Body } from '@nestjs/common';
+import { Controller, Get, Patch, Delete, Param, UseGuards, Body } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
-import { Roles, CurrentUser } from '../../common/decorators';
+import { Roles } from '../../common/decorators';
 import { UserRole } from '../users/entities/user.entity';
 import { RolesGuard } from '../../common/guards';
 import { ReportStatus } from '../communication/entities';
@@ -32,6 +32,34 @@ export class AdminController {
   @ApiOperation({ summary: 'Activate or Deactivate a user account' })
   async toggleUserStatus(@Param('id') userId: string) {
     return this.adminService.toggleUserStatus(userId);
+  }
+
+  @Get('posts')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List all platform posts for moderation' })
+  async getPosts() {
+    return this.adminService.getAllPosts();
+  }
+
+  @Delete('posts/:id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete a post as administrator' })
+  async deletePost(@Param('id') postId: string) {
+    return this.adminService.deletePost(postId);
+  }
+
+  @Get('comments')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List recent comments for moderation' })
+  async getComments() {
+    return this.adminService.getAllComments();
+  }
+
+  @Delete('comments/:id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete a comment as administrator' })
+  async deleteComment(@Param('id') commentId: string) {
+    return this.adminService.deleteComment(commentId);
   }
 
   @Patch('reports/:id/resolve')

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, In } from 'typeorm';
-import { User } from './entities/user.entity';
+import { User, UserRole } from './entities/user.entity';
 import { Profile } from './entities/profile.entity';
 import { Follow } from '../social/entities';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -64,7 +64,7 @@ export class UsersService {
       excludeIds = [...excludeIds, ...followingIds];
     }
 
-    const where: any = { isActive: true };
+    const where: any = { isActive: true, role: UserRole.USER };
     if (excludeIds.length > 0) {
       where.id = Not(In(excludeIds));
     }

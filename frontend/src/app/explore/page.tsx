@@ -7,7 +7,7 @@ import { Sidebar } from '@/shared/components/layout/Sidebar';
 import { PostCard } from '@/features/posts/components/PostCard';
 import { apiClient } from '@/shared/lib/axios';
 import { getMediaUrl } from '@/shared/lib/utils';
-import { Search, Compass, BookOpen, Users, Tag, Sparkles } from 'lucide-react';
+import { Search, Compass, BookOpen, Users, Tag, SearchX } from 'lucide-react';
 
 function ExploreContent() {
   const searchParams = useSearchParams();
@@ -19,9 +19,13 @@ function ExploreContent() {
     categories: [],
   });
   const [loading, setLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [activeQuery, setActiveQuery] = useState(initialQuery);
 
   const fetchSearchOrFallback = async (searchTerm: string) => {
     setLoading(true);
+    setHasSearched(!!searchTerm.trim());
+    setActiveQuery(searchTerm);
     try {
       const res: any = await apiClient.get(`/search?q=${encodeURIComponent(searchTerm)}`);
       setResults(res.data || { users: [], posts: [], categories: [] });
@@ -41,13 +45,17 @@ function ExploreContent() {
     fetchSearchOrFallback(query);
   };
 
+  const hasResults =
+    results.users.length > 0 || results.posts.length > 0 || results.categories.length > 0;
+  const noResultsFound = hasSearched && !loading && !hasResults;
+
   return (
-    <div className="flex-1 min-w-0 flex flex-col gap-6">
+    <div className="flex-1 min-w-0 flex flex-col gap-5">
       {/* Search Input Card */}
-      <div className="glass-card p-6 flex flex-col gap-4 border-primary/20">
-        <div className="flex items-center gap-2 text-white font-bold text-lg">
+      <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm flex flex-col gap-4">
+        <div className="flex items-center gap-2 text-gray-900 font-bold text-base">
           <Compass className="h-5 w-5 text-primary" />
-          <span>Global Knowledge Search & Discovery</span>
+          <span>Search Cognify</span>
         </div>
 
         <form onSubmit={handleSearchSubmit} className="flex gap-3">
@@ -55,25 +63,56 @@ function ExploreContent() {
             <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search topics, tutorials, skills (e.g. AI, React, Systems)"
+              placeholder="Search topics, tutorials, skills, users…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full rounded-xl border border-surface-border bg-surface/60 pl-10 pr-4 py-3 text-sm text-white placeholder-gray-500 focus:border-primary focus:outline-none"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/10 focus:outline-none transition"
             />
           </div>
           <button
             type="submit"
-            className="rounded-xl bg-gradient-to-r from-primary to-secondary px-6 py-3 text-xs font-semibold text-white shadow-lg hover:opacity-90 transition"
+            className="rounded-xl bg-primary px-5 py-2.5 text-xs font-semibold text-white hover:bg-primary-hover transition shadow-sm"
           >
             Search
           </button>
         </form>
       </div>
 
+      {loading && (
+        <div className="flex flex-col gap-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white rounded-2xl border border-gray-200 h-24 animate-pulse shadow-sm" />
+          ))}
+        </div>
+      )}
+
+      {/* No Results Fallback */}
+      {noResultsFound && (
+        <div className="bg-white rounded-2xl border border-gray-200 p-14 flex flex-col items-center gap-4 text-center shadow-sm">
+          <div className="h-16 w-16 rounded-2xl bg-gray-100 flex items-center justify-center">
+            <SearchX className="h-8 w-8 text-gray-400" />
+          </div>
+          <h3 className="text-base font-bold text-gray-800">No results found</h3>
+          <p className="text-sm text-gray-500 max-w-sm leading-relaxed">
+            No matching topics, users, or posts found for{' '}
+            <span className="font-semibold text-gray-700">"{activeQuery}"</span>. Try a different keyword or hashtag.
+          </p>
+          <button
+            onClick={() => {
+              setQuery('');
+              fetchSearchOrFallback('');
+            }}
+            className="mt-2 px-5 py-2 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-primary-hover transition"
+          >
+            Explore All Content
+          </button>
+        </div>
+      )}
+
       {/* Discovery Fallback Categories */}
-      {results.categories && results.categories.length > 0 && (
-        <div className="glass-card p-5 flex flex-col gap-3">
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+      {!loading && results.categories.length > 0 && (
+        <div className="bg-white rounded-2xl border border-gray-200 p-5 flex flex-col gap-3 shadow-sm">
+          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
             <Tag className="h-4 w-4 text-primary" />
             <span>Popular Categories</span>
           </h3>
@@ -85,7 +124,7 @@ function ExploreContent() {
                   setQuery(cat.name);
                   fetchSearchOrFallback(cat.name);
                 }}
-                className="rounded-xl bg-surface hover:bg-primary/20 hover:text-primary border border-surface-border px-3.5 py-1.5 text-xs font-semibold text-gray-300 transition"
+                className="rounded-full bg-gray-100 hover:bg-primary hover:text-white border border-gray-200 px-3.5 py-1.5 text-xs font-semibold text-gray-600 transition"
               >
                 {cat.name}
               </button>
@@ -94,21 +133,21 @@ function ExploreContent() {
         </div>
       )}
 
-      {/* Discovery Users List */}
-      {results.users && results.users.length > 0 && (
-        <div className="glass-card p-5 flex flex-col gap-3">
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-            <Users className="h-4 w-4 text-secondary" />
-            <span>Learners & Educators ({results.users.length})</span>
+      {/* Users Results */}
+      {!loading && results.users.length > 0 && (
+        <div className="bg-white rounded-2xl border border-gray-200 p-5 flex flex-col gap-3 shadow-sm">
+          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+            <Users className="h-4 w-4 text-primary" />
+            <span>People ({results.users.length})</span>
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {results.users.map((u: any) => (
               <Link
                 key={u.id}
                 href={`/profile/${u.username}`}
-                className="flex items-center gap-3 p-3 rounded-xl bg-surface/40 hover:bg-surface border border-surface-border transition group"
+                className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-100 transition group"
               >
-                <div className="h-9 w-9 rounded-full bg-secondary/20 flex items-center justify-center font-bold text-secondary text-xs overflow-hidden border border-secondary/30">
+                <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-xs overflow-hidden border border-primary/20 shrink-0">
                   {u.profile?.avatar ? (
                     <img src={getMediaUrl(u.profile.avatar)} alt={u.username} className="h-full w-full object-cover" />
                   ) : (
@@ -116,7 +155,7 @@ function ExploreContent() {
                   )}
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className="text-xs font-semibold text-white truncate group-hover:text-secondary transition">
+                  <span className="text-xs font-semibold text-gray-800 truncate group-hover:text-primary transition">
                     {u.profile?.fullName || u.username}
                   </span>
                   <span className="text-[10px] text-gray-400">@{u.username}</span>
@@ -127,12 +166,12 @@ function ExploreContent() {
         </div>
       )}
 
-      {/* Results Posts List */}
-      {results.posts && results.posts.length > 0 && (
+      {/* Post Results */}
+      {!loading && results.posts.length > 0 && (
         <div className="flex flex-col gap-4">
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-primary" />
-            <span>Educational Posts ({results.posts.length})</span>
+          <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
+            <BookOpen className="h-4 w-4 text-primary" />
+            <span>Posts ({results.posts.length})</span>
           </h3>
           {results.posts.map((post) => (
             <PostCard key={post.id} post={post} />
@@ -145,9 +184,9 @@ function ExploreContent() {
 
 export default function ExplorePage() {
   return (
-    <div className="flex gap-8 items-start">
+    <div className="flex gap-6 items-start">
       <Sidebar />
-      <Suspense fallback={<div className="flex-1 glass-card p-12 h-64 animate-pulse" />}>
+      <Suspense fallback={<div className="flex-1 bg-white rounded-2xl border border-gray-200 h-64 animate-pulse" />}>
         <ExploreContent />
       </Suspense>
     </div>

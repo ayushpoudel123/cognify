@@ -5,14 +5,20 @@ import { Sidebar } from '@/shared/components/layout/Sidebar';
 import { RightSidebar } from '@/shared/components/layout/RightSidebar';
 import { PostCard } from '@/features/posts/components/PostCard';
 import { CreatePostModal } from '@/features/posts/components/CreatePostModal';
+import { AuthGuardModal } from '@/shared/components/AuthGuardModal';
 import { postsApi } from '@/features/posts/api';
-import { Sparkles, Flame, Users as UsersIcon, Plus } from 'lucide-react';
+import { useAuth } from '@/shared/providers/AuthProvider';
+import { Sparkles, Flame, Users as UsersIcon, Plus, Users, Compass } from 'lucide-react';
+import Link from 'next/link';
 
 export default function FeedPage() {
+  const { user: currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState<'latest' | 'trending' | 'following'>('latest');
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authAction, setAuthAction] = useState('');
 
   const fetchPosts = async () => {
     setLoading(true);
@@ -37,55 +43,53 @@ export default function FeedPage() {
     fetchPosts();
   }, [activeTab]);
 
+  const handleRequireAuth = (action = 'perform this action') => {
+    setAuthAction(action);
+    setAuthModalOpen(true);
+  };
+
+  const handleCreatePost = () => {
+    if (!currentUser) {
+      handleRequireAuth('create a post');
+      return;
+    }
+    setIsCreateOpen(true);
+  };
+
+  const tabs = [
+    { id: 'latest', label: 'Latest', icon: <Sparkles className="h-4 w-4" /> },
+    { id: 'trending', label: 'Trending', icon: <Flame className="h-4 w-4 text-amber-500" /> },
+    { id: 'following', label: 'Following', icon: <UsersIcon className="h-4 w-4" /> },
+  ] as const;
+
   return (
-    <div className="flex gap-8 items-start">
-      <Sidebar onOpenCreatePost={() => setIsCreateOpen(true)} />
+    <div className="flex gap-6 items-start">
+      <Sidebar onOpenCreatePost={handleCreatePost} />
 
       {/* Main Feed Container */}
-      <section className="flex-1 min-w-0 flex flex-col gap-6">
+      <section className="flex-1 min-w-0 flex flex-col gap-4">
         {/* Feed Header Tabs */}
-        <div className="glass-card p-2 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setActiveTab('latest')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs tracking-wider uppercase transition ${
-                activeTab === 'latest'
-                  ? 'bg-primary text-white shadow-md shadow-primary/30'
-                  : 'text-gray-400 hover:text-white hover:bg-surface'
-              }`}
-            >
-              <Sparkles className="h-4 w-4" />
-              <span>Latest</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('trending')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs tracking-wider uppercase transition ${
-                activeTab === 'trending'
-                  ? 'bg-primary text-white shadow-md shadow-primary/30'
-                  : 'text-gray-400 hover:text-white hover:bg-surface'
-              }`}
-            >
-              <Flame className="h-4 w-4 text-amber-400" />
-              <span>Trending</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('following')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs tracking-wider uppercase transition ${
-                activeTab === 'following'
-                  ? 'bg-primary text-white shadow-md shadow-primary/30'
-                  : 'text-gray-400 hover:text-white hover:bg-surface'
-              }`}
-            >
-              <UsersIcon className="h-4 w-4" />
-              <span>Following</span>
-            </button>
+        <div className="bg-white rounded-2xl border border-gray-200 p-1.5 flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-1">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-xs tracking-wide transition ${
+                  activeTab === tab.id
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'
+                }`}
+              >
+                {tab.icon}
+                <span>{tab.label}</span>
+              </button>
+            ))}
           </div>
 
           <button
-            onClick={() => setIsCreateOpen(true)}
-            className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-primary to-secondary px-3.5 py-2 text-xs font-semibold text-white shadow-md hover:opacity-90 transition lg:hidden"
+            onClick={handleCreatePost}
+            className="flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-xs font-semibold text-white hover:bg-primary-hover transition lg:hidden"
           >
             <Plus className="h-4 w-4" />
             <span>Post</span>
@@ -96,24 +100,51 @@ export default function FeedPage() {
         {loading ? (
           <div className="flex flex-col gap-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="glass-card p-6 h-48 animate-pulse bg-surface/40" />
+              <div key={i} className="bg-white rounded-2xl border border-gray-200 h-48 animate-pulse shadow-sm" />
             ))}
           </div>
         ) : posts.length > 0 ? (
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-4">
             {posts.map((post) => (
-              <PostCard key={post.id} post={post} />
+              <PostCard
+                key={post.id}
+                post={post}
+                onPostUpdated={fetchPosts}
+                onPostDeleted={fetchPosts}
+                onRequireAuth={() => handleRequireAuth('like or interact with posts')}
+              />
             ))}
           </div>
+        ) : activeTab === 'following' ? (
+          /* Following-specific empty state */
+          <div className="bg-white rounded-2xl border border-gray-200 p-14 flex flex-col items-center justify-center text-center gap-4 shadow-sm">
+            <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <Users className="h-8 w-8 text-primary/60" />
+            </div>
+            <h3 className="text-base font-bold text-gray-800">No posts from your connections yet</h3>
+            <p className="text-sm text-gray-500 max-w-sm leading-relaxed">
+              You aren't following anyone yet, or the people you follow haven't posted recently. Discover new educators and learners!
+            </p>
+            <Link
+              href="/explore"
+              className="mt-2 flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-xs font-semibold text-white hover:bg-primary-hover transition"
+            >
+              <Compass className="h-4 w-4" />
+              <span>Discover People to Follow</span>
+            </Link>
+          </div>
         ) : (
-          <div className="glass-card p-12 flex flex-col items-center justify-center text-center gap-3">
-            <Sparkles className="h-10 w-10 text-primary/40" />
-            <h3 className="text-lg font-bold text-white">No Educational Posts Yet</h3>
-            <p className="text-sm text-gray-400 max-w-sm">
-              Be the first to share knowledge, write notes, or post a study question!
+          /* Generic empty state */
+          <div className="bg-white rounded-2xl border border-gray-200 p-14 flex flex-col items-center justify-center text-center gap-4 shadow-sm">
+            <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <Sparkles className="h-8 w-8 text-primary/60" />
+            </div>
+            <h3 className="text-base font-bold text-gray-800">No posts here yet</h3>
+            <p className="text-sm text-gray-500 max-w-sm leading-relaxed">
+              Be the first to share knowledge, write study notes, or post a question!
             </p>
             <button
-              onClick={() => setIsCreateOpen(true)}
+              onClick={handleCreatePost}
               className="mt-2 rounded-xl bg-primary px-5 py-2.5 text-xs font-semibold text-white hover:bg-primary-hover transition"
             >
               Create First Post
@@ -122,12 +153,18 @@ export default function FeedPage() {
         )}
       </section>
 
-      <RightSidebar />
+      <RightSidebar onRequireAuth={() => handleRequireAuth('follow users')} />
 
       <CreatePostModal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
         onPostCreated={fetchPosts}
+      />
+
+      <AuthGuardModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        action={authAction}
       />
     </div>
   );

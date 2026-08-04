@@ -2,32 +2,89 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 @layer base {
   body {
-    @apply bg-background text-gray-100 font-sans antialiased min-h-screen selection:bg-primary selection:text-white;
+    @apply bg-background text-text-primary font-sans antialiased min-h-screen;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  * {
+    @apply box-border;
+  }
+
+  /* Remove dark-mode inversion */
+  html {
+    color-scheme: light;
   }
 }
 
+/* ─── Core Card Component ─────────────────────────────────── */
 .glass-card {
-  @apply bg-surface/80 backdrop-blur-xl border border-surface-border rounded-2xl shadow-xl transition-all duration-200;
+  @apply bg-white border border-surface-border rounded-2xl shadow-card transition-all duration-200;
 }
 
+.glass-card:hover {
+  @apply shadow-card-hover;
+}
+
+/* ─── Input Component ─────────────────────────────────────── */
 .glass-input {
-  @apply bg-surface/50 border border-surface-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 py-2 text-white placeholder-gray-400 outline-none transition-all;
+  @apply bg-surface-muted border border-surface-border focus:border-primary focus:ring-2 focus:ring-primary/10 rounded-xl px-4 py-2.5 text-text-primary placeholder-text-muted outline-none transition-all text-sm;
 }
 
-/* Custom scrollbars */
+/* ─── Button Utilities ────────────────────────────────────── */
+.btn-primary {
+  @apply bg-primary hover:bg-primary-hover text-white font-semibold rounded-xl px-5 py-2.5 text-sm transition-all shadow-sm;
+}
+
+.btn-secondary {
+  @apply bg-surface-muted hover:bg-surface-hover text-text-primary font-semibold rounded-xl px-5 py-2.5 text-sm border border-surface-border transition-all;
+}
+
+.btn-ghost {
+  @apply hover:bg-surface-hover text-text-secondary font-semibold rounded-xl px-5 py-2.5 text-sm transition-all;
+}
+
+/* ─── Scrollbar Styling ───────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #0b0f19;
+  background: #F0F2F5;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1f2937;
+  background: #C8CBD0;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #374151;
+  background: #A8ABB0;
+}
+
+/* ─── Selection ───────────────────────────────────────────── */
+::selection {
+  background-color: #1877F2;
+  color: white;
+}
+
+/* ─── Smooth transitions ──────────────────────────────────── */
+a, button {
+  @apply transition-all duration-150;
+}
+
+/* ─── Link hover ──────────────────────────────────────────── */
+.link-hover {
+  @apply text-primary hover:underline font-medium cursor-pointer;
+}
+
+/* ─── Animate in ──────────────────────────────────────────── */
+@keyframes animate-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-in {
+  animation: animate-in 0.15s ease-out forwards;
 }

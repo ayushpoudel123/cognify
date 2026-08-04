@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
-import { User } from '../users/entities/user.entity';
+import { User, UserRole } from '../users/entities/user.entity';
 import { Post, PostStatus, Category } from '../posts/entities';
 
 @Injectable()
@@ -26,7 +26,7 @@ export class SearchService {
         take: 10,
       });
       const users = await this.userRepository.find({
-        where: { isActive: true },
+        where: { isActive: true, role: UserRole.USER },
         relations: ['profile'],
         order: { createdAt: 'DESC' },
         take: 6,
@@ -38,8 +38,8 @@ export class SearchService {
 
     const users = await this.userRepository.find({
       where: [
-        { username: ILike(searchTerm), isActive: true },
-        { email: ILike(searchTerm), isActive: true },
+        { username: ILike(searchTerm), isActive: true, role: UserRole.USER },
+        { email: ILike(searchTerm), isActive: true, role: UserRole.USER },
       ],
       relations: ['profile'],
       take: 10,

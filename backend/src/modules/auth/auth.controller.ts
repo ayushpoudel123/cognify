@@ -19,12 +19,29 @@ export class AuthController {
   }
 
   @Public()
+  @Post('admin/register')
+  @ApiOperation({ summary: 'Register a new admin account' })
+  @ApiResponse({ status: 201, description: 'Admin account created successfully' })
+  async adminRegister(@Body() registerDto: RegisterDto) {
+    return this.authService.adminRegister(registerDto);
+  }
+
+  @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login user with credentials' })
   @ApiResponse({ status: 200, description: 'User authenticated successfully' })
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
+  }
+
+  @Public()
+  @Post('admin/login')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Login admin with credentials' })
+  @ApiResponse({ status: 200, description: 'Admin authenticated successfully' })
+  async adminLogin(@Body() loginDto: LoginDto) {
+    return this.authService.adminLogin(loginDto);
   }
 
   @Public()

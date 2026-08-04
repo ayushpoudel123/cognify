@@ -2,7 +2,7 @@ import {
   Injectable,
   ConflictException,
   UnauthorizedException,
-  NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -65,6 +65,44 @@ export class AuthService {
     };
   }
 
+  async adminRegister(registerDto: RegisterDto) {
+    const existingEmail = await this.userRepository.findOne({
+      where: { email: registerDto.email },
+    });
+    if (existingEmail) {
+      throw new ConflictException('Email is already registered');
+    }
+
+    const existingUsername = await this.userRepository.findOne({
+      where: { username: registerDto.username },
+    });
+    if (existingUsername) {
+      throw new ConflictException('Username is already taken');
+    }
+
+    const passwordHash = await bcrypt.hash(registerDto.password, 10);
+
+    const user = this.userRepository.create({
+      email: registerDto.email,
+      username: registerDto.username,
+      passwordHash,
+      role: UserRole.ADMIN,
+      isVerified: true,
+      profile: this.profileRepository.create({
+        fullName: registerDto.fullName || `Admin ${registerDto.username}`,
+        bio: 'System Administrator on Cognify.',
+      }),
+    });
+
+    const savedUser = await this.userRepository.save(user);
+    const tokens = await this.generateTokens(savedUser);
+
+    return {
+      user: this.sanitizeUser(savedUser),
+      ...tokens,
+    };
+  }
+
   async login(loginDto: LoginDto) {
     const user = await this.userRepository.findOne({
       where: [
@@ -76,6 +114,43 @@ export class AuthService {
 
     if (!user || !user.isActive) {
       throw new UnauthorizedException('Invalid credentials or account inactive');
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+      loginDto.password,
+      user.passwordHash,
+    );
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const fullUser = await this.userRepository.findOne({
+      where: { id: user.id },
+    });
+
+    const tokens = await this.generateTokens(fullUser);
+
+    return {
+      user: this.sanitizeUser(fullUser),
+      ...tokens,
+    };
+  }
+
+  async adminLogin(loginDto: LoginDto) {
+    const user = await this.userRepository.findOne({
+      where: [
+        { email: loginDto.emailOrUsername },
+        { username: loginDto.emailOrUsername },
+      ],
+      select: ['id', 'email', 'username', 'passwordHash', 'role', 'isActive'],
+    });
+
+    if (!user || !user.isActive) {
+      throw new UnauthorizedException('Invalid credentials or account inactive');
+    }
+
+    if (user.role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Access denied. This portal is restricted to System Administrators.');
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -159,3 +234,4 @@ export class AuthService {
     return rest;
   }
 }
+

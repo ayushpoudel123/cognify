@@ -7,31 +7,28 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiConsumes, ApiBearerAuth } from '@nestjs/swagger';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { memoryStorage } from 'multer';
+import { CloudinaryService } from './cloudinary.service';
+import { Public } from '../../common/decorators';
 
 @ApiTags('Media Uploads')
 @Controller('media')
 export class MediaController {
+  constructor(private readonly cloudinaryService: CloudinaryService) {}
+
+  @Public()
   @Post('upload')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Upload an image or video file' })
+  @ApiOperation({ summary: 'Upload an image or video file to Cloudinary / storage' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, callback) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          const ext = extname(file.originalname);
-          callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
-        },
-      }),
+      storage: memoryStorage(),
       limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
       fileFilter: (req, file, callback) => {
-        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp|mp4|webm|quicktime)$/)) {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp|mp4|webm|quicktime)$/i)) {
           return callback(
-            new BadRequestException('Unsupported file type'),
+            new BadRequestException('Unsupported file type. Allowed: jpg, jpeg, png, gif, webp, mp4, webm, quicktime'),
             false,
           );
         }
@@ -39,16 +36,10 @@ export class MediaController {
       },
     }),
   )
-  uploadFile(@UploadedFile() file: Express.Multer.File) {
+  async uploadFile(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException('File is missing');
     }
-    const url = `/uploads/${file.filename}`;
-    return {
-      url,
-      filename: file.filename,
-      mimetype: file.mimetype,
-      size: file.size,
-    };
+    return this.cloudinaryService.uploadFile(file);
   }
 }

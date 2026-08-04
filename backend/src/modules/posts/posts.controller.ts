@@ -34,6 +34,13 @@ export class PostsController {
   }
 
   @Public()
+  @Get('trending-topics')
+  @ApiOperation({ summary: 'Get dynamic trending topics and hashtag stats' })
+  async getTrendingTopics() {
+    return this.postsService.getTrendingTopics();
+  }
+
+  @Public()
   @Get(':id')
   @ApiOperation({ summary: 'Get post details by ID' })
   async findOne(@Param('id') id: string) {

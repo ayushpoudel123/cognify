@@ -50,8 +50,28 @@ export class UpdatePostDto {
   @IsString()
   content?: string;
 
+  @ApiPropertyOptional({ enum: PostType })
+  @IsOptional()
+  @IsEnum(PostType)
+  type?: PostType;
+
   @ApiPropertyOptional({ enum: PostStatus })
   @IsOptional()
   @IsEnum(PostStatus)
   status?: PostStatus;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  categoryId?: string;
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  hashtags?: string[];
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  mediaUrls?: string[];
 }

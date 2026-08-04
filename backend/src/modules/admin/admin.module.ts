@@ -5,9 +5,10 @@ import { AdminController } from './admin.controller';
 import { User } from '../users/entities/user.entity';
 import { Post } from '../posts/entities/post.entity';
 import { Report } from '../communication/entities';
+import { Comment } from '../comments/entities/comment.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Post, Report])],
+  imports: [TypeOrmModule.forFeature([User, Post, Report, Comment])],
   controllers: [AdminController],
   providers: [AdminService],
 })
