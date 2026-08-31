@@ -82,10 +82,10 @@ export function PostCard({ post, onPostUpdated, onPostDeleted, onRequireAuth }: 
               )}
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-semibold text-white group-hover:text-primary transition">
+              <span className="text-sm font-semibold text-gray-900 group-hover:text-primary transition">
                 {post.author?.profile?.fullName || post.author?.username}
               </span>
-              <span className="text-xs text-gray-400">@{post.author?.username}</span>
+              <span className="text-xs text-gray-500">@{post.author?.username}</span>
             </div>
           </Link>
 
@@ -100,19 +100,19 @@ export function PostCard({ post, onPostUpdated, onPostDeleted, onRequireAuth }: 
               <div className="relative">
                 <button
                   onClick={() => setShowMenu(!showMenu)}
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-surface/60 transition"
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition"
                 >
                   <MoreVertical className="h-4 w-4" />
                 </button>
 
                 {showMenu && (
-                  <div className="absolute right-0 top-8 z-20 w-36 glass-card p-1.5 shadow-xl border-surface-border flex flex-col gap-1 animate-in fade-in zoom-in duration-100">
+                  <div className="absolute right-0 top-8 z-20 w-36 bg-white rounded-xl p-1.5 shadow-xl border border-gray-200 flex flex-col gap-1 animate-in fade-in zoom-in duration-100">
                     <button
                       onClick={() => {
                         setShowMenu(false);
                         setIsEditOpen(true);
                       }}
-                      className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-gray-200 hover:text-primary hover:bg-surface rounded-lg transition"
+                      className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:text-primary hover:bg-gray-50 rounded-lg transition"
                     >
                       <Edit3 className="h-3.5 w-3.5" />
                       <span>Edit Post</span>
@@ -122,7 +122,7 @@ export function PostCard({ post, onPostUpdated, onPostDeleted, onRequireAuth }: 
                         setShowMenu(false);
                         handleDelete();
                       }}
-                      className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500/10 rounded-lg transition"
+                      className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-50 rounded-lg transition"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                       <span>Delete</span>
@@ -137,11 +137,11 @@ export function PostCard({ post, onPostUpdated, onPostDeleted, onRequireAuth }: 
         {/* Title & Content */}
         <div className="flex flex-col gap-2">
           <Link href={`/post/${post.id}`} className="group">
-            <h2 className="text-lg font-bold text-white group-hover:text-primary transition leading-snug">
+            <h2 className="text-lg font-bold text-gray-900 group-hover:text-primary transition leading-snug">
               {post.title}
             </h2>
           </Link>
-          <p className="text-sm text-gray-300 leading-relaxed line-clamp-3">{post.content}</p>
+          <p className="text-sm text-gray-700 leading-relaxed line-clamp-3">{post.content}</p>
         </div>
 
         {/* Media Attachments */}

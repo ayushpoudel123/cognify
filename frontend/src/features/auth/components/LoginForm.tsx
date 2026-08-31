@@ -98,13 +98,6 @@ export function LoginForm() {
           Sign up for free
         </Link>
       </div>
-
-      <div className="mt-2 text-center text-xs text-gray-400">
-        Are you an admin?{' '}
-        <Link href="/login/admin" className="text-amber-600 font-medium hover:underline">
-          Admin Login →
-        </Link>
-      </div>
     </div>
   );
 }

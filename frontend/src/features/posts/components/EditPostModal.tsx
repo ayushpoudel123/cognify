@@ -89,16 +89,16 @@ export function EditPostModal({ isOpen, post, onClose, onPostUpdated }: EditPost
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="glass-card w-full max-w-2xl p-6 border-primary/30 shadow-2xl relative animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl w-full max-w-2xl p-6 border border-gray-200 shadow-2xl relative animate-in fade-in zoom-in duration-200">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white transition"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition"
         >
           <X className="h-5 w-5" />
         </button>
 
-        <div className="flex items-center gap-2 mb-6 text-white font-bold text-lg">
+        <div className="flex items-center gap-2 mb-6 text-gray-900 font-bold text-lg">
           <Edit3 className="h-5 w-5 text-primary" />
           <span>Edit Educational Post</span>
         </div>
@@ -110,7 +110,7 @@ export function EditPostModal({ isOpen, post, onClose, onPostUpdated }: EditPost
             placeholder="Post Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full rounded-xl border border-surface-border bg-surface/60 px-4 py-3 text-base font-semibold text-white placeholder-gray-500 focus:border-primary focus:outline-none"
+            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-base font-semibold text-gray-900 placeholder-gray-400 focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/10 transition"
           />
 
           <textarea
@@ -119,7 +119,7 @@ export function EditPostModal({ isOpen, post, onClose, onPostUpdated }: EditPost
             placeholder="Educational content..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="w-full rounded-xl border border-surface-border bg-surface/60 p-4 text-sm text-white placeholder-gray-500 focus:border-primary focus:outline-none resize-none"
+            className="w-full rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-900 placeholder-gray-400 focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/10 resize-none transition"
           />
 
           <input
@@ -127,16 +127,16 @@ export function EditPostModal({ isOpen, post, onClose, onPostUpdated }: EditPost
             placeholder="Hashtags separated by commas (e.g. MachineLearning, Python)"
             value={hashtags}
             onChange={(e) => setHashtags(e.target.value)}
-            className="w-full rounded-xl border border-surface-border bg-surface/60 px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:border-primary focus:outline-none"
+            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/10 transition"
           />
 
           {/* Media File Picker & Preview */}
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
+            <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
               Attach or Replace Image/Video
             </label>
             {mediaUrl ? (
-              <div className="relative rounded-xl overflow-hidden border border-surface-border group max-h-48">
+              <div className="relative rounded-xl overflow-hidden border border-gray-200 group max-h-48">
                 {mediaType === 'VIDEO' ? (
                   <video src={getMediaUrl(mediaUrl)} controls className="w-full max-h-48 object-cover" />
                 ) : (
@@ -145,13 +145,13 @@ export function EditPostModal({ isOpen, post, onClose, onPostUpdated }: EditPost
                 <button
                   type="button"
                   onClick={() => setMediaUrl('')}
-                  className="absolute top-2 right-2 rounded-lg bg-red-600/80 p-1.5 text-white hover:bg-red-600 transition"
+                  className="absolute top-2 right-2 rounded-lg bg-red-600/90 p-1.5 text-white hover:bg-red-600 transition"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
             ) : (
-              <label className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-surface-border bg-surface/30 py-4 text-xs font-medium text-gray-400 hover:border-primary hover:text-white transition cursor-pointer">
+              <label className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-gray-300 bg-gray-50 py-4 text-xs font-medium text-gray-600 hover:border-primary hover:text-primary hover:bg-white transition cursor-pointer">
                 <Upload className="h-4 w-4 text-primary" />
                 <span>{uploading ? 'Uploading media...' : 'Choose Image or Video File'}</span>
                 <input
@@ -165,18 +165,18 @@ export function EditPostModal({ isOpen, post, onClose, onPostUpdated }: EditPost
             )}
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-surface-border">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-sm font-medium text-gray-400 hover:text-white transition"
+              className="px-4 py-2 rounded-xl text-sm font-medium text-gray-500 hover:text-gray-800 transition"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading || uploading}
-              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-secondary px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-primary/25 hover:opacity-90 transition disabled:opacity-50"
+              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-secondary px-6 py-2.5 text-sm font-semibold text-white shadow-md shadow-primary/20 hover:opacity-90 transition disabled:opacity-50"
             >
               <Save className="h-4 w-4" />
               <span>{loading ? 'Saving...' : 'Save Changes'}</span>

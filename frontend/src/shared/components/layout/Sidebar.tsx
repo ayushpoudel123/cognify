@@ -24,15 +24,19 @@ export function Sidebar({ onOpenCreatePost }: SidebarProps) {
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
 
-  const navItems = [
-    { label: 'Feed', href: '/', icon: Home },
-    { label: 'Explore & Search', href: '/explore', icon: Compass },
-    ...(!isAdmin ? [{ label: 'Saved Bookmarks', href: '/bookmarks', icon: Bookmark }] : []),
-    ...(!isAdmin ? [{ label: 'Messages', href: '/chat', icon: MessageCircle }] : []),
-    ...(!isAdmin ? [{ label: 'Analytics', href: '/analytics', icon: BarChart3 }] : []),
-    ...(isAdmin ? [{ label: 'Admin Panel', href: '/admin', icon: ShieldCheck }] : []),
-    ...(user ? [{ label: 'My Profile', href: `/profile/${user.username}`, icon: User }] : []),
-  ];
+  const navItems = isAdmin
+    ? [
+        { label: 'Admin Control Panel', href: '/admin', icon: ShieldCheck },
+        ...(user ? [{ label: 'My Profile', href: `/profile/${user.username}`, icon: User }] : []),
+      ]
+    : [
+        { label: 'Feed', href: '/', icon: Home },
+        { label: 'Explore & Search', href: '/explore', icon: Compass },
+        { label: 'Saved Bookmarks', href: '/bookmarks', icon: Bookmark },
+        { label: 'Messages', href: '/chat', icon: MessageCircle },
+        { label: 'Analytics', href: '/analytics', icon: BarChart3 },
+        ...(user ? [{ label: 'My Profile', href: `/profile/${user.username}`, icon: User }] : []),
+      ];
 
   return (
     <aside className="sticky top-16 hidden lg:flex flex-col gap-3 w-60 shrink-0">

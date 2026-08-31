@@ -56,21 +56,21 @@ export class UsersService {
   }
 
   async getSuggestedUsers(currentUserId?: string) {
-    let excludeIds: string[] = [];
-    if (currentUserId) {
-      excludeIds.push(currentUserId);
-      const follows = await this.followRepository.find({ where: { followerId: currentUserId } });
-      const followingIds = follows.map((f) => f.followingId);
-      excludeIds = [...excludeIds, ...followingIds];
+    if (!currentUserId) {
+      return [];
     }
 
-    const where: any = { isActive: true, role: UserRole.USER };
-    if (excludeIds.length > 0) {
-      where.id = Not(In(excludeIds));
-    }
+    let excludeIds: string[] = [currentUserId];
+    const follows = await this.followRepository.find({ where: { followerId: currentUserId } });
+    const followingIds = follows.map((f) => f.followingId);
+    excludeIds = [...excludeIds, ...followingIds];
 
     const users = await this.userRepository.find({
-      where,
+      where: {
+        isActive: true,
+        role: UserRole.USER,
+        id: Not(In(excludeIds)),
+      },
       relations: ['profile'],
       take: 5,
       order: { createdAt: 'DESC' },

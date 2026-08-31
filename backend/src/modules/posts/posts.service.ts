@@ -145,14 +145,21 @@ export class PostsService {
         postsFormatted: `${count} ${count === 1 ? 'post' : 'posts'}`,
       }));
 
-    // Fallback default tags if no posts exist yet
     if (sortedTags.length === 0) {
-      return [
-        { tag: '#MachineLearning', postsCount: 1, postsFormatted: '1 post' },
-        { tag: '#WebDevelopment', postsCount: 1, postsFormatted: '1 post' },
-        { tag: '#DataScience', postsCount: 1, postsFormatted: '1 post' },
-        { tag: '#SystemDesign', postsCount: 1, postsFormatted: '1 post' },
-      ];
+      const categories = await this.categoryRepository.find();
+      const catTopics = await Promise.all(
+        categories.map(async (cat) => {
+          const count = await this.postRepository.count({
+            where: { categoryId: cat.id, status: PostStatus.PUBLISHED },
+          });
+          return {
+            tag: `#${cat.name.replace(/\s+/g, '')}`,
+            postsCount: count,
+            postsFormatted: `${count} ${count === 1 ? 'post' : 'posts'}`,
+          };
+        }),
+      );
+      return catTopics.filter((t) => t.postsCount > 0);
     }
 
     return sortedTags;

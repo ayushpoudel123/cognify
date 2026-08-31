@@ -1,9 +1,6 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: cognify_postgres
     restart: always
     environment:
       POSTGRES_USER: cognify_user
@@ -13,12 +10,16 @@ services:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cognify_user -d cognify_db"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
     networks:
       - cognify_network
 
   pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: cognify_pgadmin
     restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@cognify.com
@@ -26,7 +27,8 @@ services:
     ports:
       - '5050:80'
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - cognify_network
 
@@ -34,7 +36,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: cognify_backend
     restart: always
     ports:
       - '4000:4000'
@@ -53,7 +54,8 @@ services:
     volumes:
       - ./backend/uploads:/app/uploads
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - cognify_network
 
@@ -65,7 +67,6 @@ services:
         NEXT_PUBLIC_API_URL: http://localhost:4000/api
         NEXT_PUBLIC_SOCKET_URL: http://localhost:4000
         NEXT_PUBLIC_BACKEND_URL: http://localhost:4000
-    container_name: cognify_frontend
     restart: always
     ports:
       - '3000:3000'

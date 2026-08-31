@@ -21,13 +21,32 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     ]);
 
     if (isPublic) {
+      try {
+        const res = super.canActivate(context);
+        if (res instanceof Promise) {
+          return res.catch(() => true);
+        }
+      } catch {
+        return true;
+      }
       return true;
     }
 
     return super.canActivate(context);
   }
 
-  handleRequest(err: any, user: any) {
+  handleRequest(err: any, user: any, info: any, context?: ExecutionContext) {
+    const isPublic = context
+      ? this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+          context.getHandler(),
+          context.getClass(),
+        ])
+      : false;
+
+    if (isPublic) {
+      return user || null;
+    }
+
     if (err || !user) {
       throw err || new UnauthorizedException('Authentication token missing or invalid');
     }

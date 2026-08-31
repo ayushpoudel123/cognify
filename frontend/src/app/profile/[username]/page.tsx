@@ -183,11 +183,11 @@ export default function ProfilePage() {
 
               {/* Action Buttons */}
               <div className="flex items-center gap-3">
-                {!isSelf && (
+                {!isSelf && currentUser?.role !== 'ADMIN' && (
                   <>
                     <button
                       onClick={handleDirectMessage}
-                      className="flex items-center gap-2 rounded-xl border border-surface-border bg-surface/60 px-4 py-2 text-xs font-semibold text-white hover:bg-surface transition"
+                      className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2 text-xs font-semibold text-gray-800 hover:bg-gray-100 transition"
                     >
                       <MessageSquare className="h-4 w-4 text-primary" />
                       <span>Message</span>
@@ -195,9 +195,9 @@ export default function ProfilePage() {
 
                     <button
                       onClick={handleFollowToggle}
-                      className={`flex items-center gap-2 rounded-xl px-5 py-2 text-xs font-semibold shadow-lg transition ${
+                      className={`flex items-center gap-2 rounded-xl px-5 py-2 text-xs font-semibold shadow-md transition ${
                         isFollowing
-                          ? 'bg-surface border border-surface-border text-gray-300 hover:text-red-400'
+                          ? 'bg-gray-100 border border-gray-300 text-gray-700 hover:text-red-500 hover:border-red-300'
                           : 'bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90'
                       }`}
                     >
@@ -219,37 +219,37 @@ export default function ProfilePage() {
             </div>
 
             <div className="flex flex-col gap-1 mt-2">
-              <h1 className="text-2xl font-bold text-white tracking-tight">
+              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
                 {profile.fullName || profileUser.username}
               </h1>
-              <span className="text-sm font-medium text-gray-400">@{profileUser.username}</span>
+              <span className="text-sm font-medium text-gray-500">@{profileUser.username}</span>
             </div>
 
-            {/* Followers & Following Instagram-Style Interactive Stats */}
-            <div className="flex items-center gap-6 py-2 border-y border-surface-border my-1">
+            {/* Followers & Following Interactive Stats */}
+            <div className="flex items-center gap-6 py-2 border-y border-gray-100 my-1">
               <button
                 onClick={() => openListModal('followers')}
                 className="flex items-center gap-1.5 text-sm hover:text-primary transition"
               >
-                <span className="font-bold text-white text-base">{profileUser.followersCount || 0}</span>
-                <span className="text-gray-400">Followers</span>
+                <span className="font-bold text-gray-900 text-base">{profileUser.followersCount || 0}</span>
+                <span className="text-gray-500">Followers</span>
               </button>
 
               <button
                 onClick={() => openListModal('following')}
                 className="flex items-center gap-1.5 text-sm hover:text-primary transition"
               >
-                <span className="font-bold text-white text-base">{profileUser.followingCount || 0}</span>
-                <span className="text-gray-400">Following</span>
+                <span className="font-bold text-gray-900 text-base">{profileUser.followingCount || 0}</span>
+                <span className="text-gray-500">Following</span>
               </button>
             </div>
 
             {profile.bio && (
-              <p className="text-sm text-gray-300 leading-relaxed max-w-2xl">{profile.bio}</p>
+              <p className="text-sm text-gray-700 leading-relaxed max-w-2xl">{profile.bio}</p>
             )}
 
             {/* Profile Meta & Badges */}
-            <div className="flex flex-wrap items-center gap-4 text-xs text-gray-400 pt-1">
+            <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 pt-1">
               {profile.education && (
                 <div className="flex items-center gap-1.5">
                   <BookOpen className="h-4 w-4 text-primary" />
@@ -275,7 +275,7 @@ export default function ProfilePage() {
                 {profile.skills.map((skill: string) => (
                   <span
                     key={skill}
-                    className="rounded-lg bg-surface border border-surface-border px-3 py-1 text-xs font-semibold text-gray-300"
+                    className="rounded-lg bg-gray-100 border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-700"
                   >
                     {skill}
                   </span>
@@ -288,16 +288,16 @@ export default function ProfilePage() {
 
       {/* Followers / Following Modal List */}
       {modalType && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="glass-card w-full max-w-md p-6 border-primary/30 shadow-2xl relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 border border-gray-200 shadow-2xl relative">
             <button
               onClick={() => setModalType(null)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white transition"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition"
             >
               <X className="h-5 w-5" />
             </button>
 
-            <h3 className="text-lg font-bold text-white mb-4 uppercase tracking-wider text-xs flex items-center gap-2">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 uppercase tracking-wider text-xs flex items-center gap-2">
               <Users className="h-4 w-4 text-primary" />
               <span>{modalType === 'followers' ? 'Followers' : 'Following'}</span>
             </h3>
@@ -305,7 +305,7 @@ export default function ProfilePage() {
             {modalLoading ? (
               <div className="p-8 text-center text-xs text-gray-400 animate-pulse">Loading list...</div>
             ) : modalUsers.length > 0 ? (
-              <div className="max-h-80 overflow-y-auto flex flex-col divide-y divide-surface-border">
+              <div className="max-h-80 overflow-y-auto flex flex-col divide-y divide-gray-100">
                 {modalUsers.map((u) => (
                   <div key={u.id} className="py-3 flex items-center justify-between">
                     <Link
@@ -321,10 +321,10 @@ export default function ProfilePage() {
                         )}
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-white group-hover:text-primary transition">
+                        <span className="text-sm font-semibold text-gray-900 group-hover:text-primary transition">
                           {u.profile?.fullName || u.username}
                         </span>
-                        <span className="text-xs text-gray-400">@{u.username}</span>
+                        <span className="text-xs text-gray-500">@{u.username}</span>
                       </div>
                     </Link>
                   </div>

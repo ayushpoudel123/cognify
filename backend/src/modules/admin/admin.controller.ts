@@ -1,10 +1,11 @@
-import { Controller, Get, Patch, Delete, Param, UseGuards, Body } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, UseGuards, Body } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { Roles } from '../../common/decorators';
 import { UserRole } from '../users/entities/user.entity';
 import { RolesGuard } from '../../common/guards';
 import { ReportStatus } from '../communication/entities';
+import { PostStatus } from '../posts/entities/post.entity';
 
 @ApiTags('Admin Controls')
 @Controller('admin')
@@ -41,6 +42,16 @@ export class AdminController {
     return this.adminService.getAllPosts();
   }
 
+  @Patch('posts/:id/status')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update post moderation status (Flag, Take Down, Restore)' })
+  async updatePostStatus(
+    @Param('id') postId: string,
+    @Body('status') status: PostStatus,
+  ) {
+    return this.adminService.updatePostStatus(postId, status);
+  }
+
   @Delete('posts/:id')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a post as administrator' })
@@ -62,6 +73,13 @@ export class AdminController {
     return this.adminService.deleteComment(commentId);
   }
 
+  @Get('reports')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List all user and content reports' })
+  async getReports() {
+    return this.adminService.getAllReports();
+  }
+
   @Patch('reports/:id/resolve')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Resolve or dismiss a user/post report' })
@@ -70,5 +88,22 @@ export class AdminController {
     @Body('status') status: ReportStatus,
   ) {
     return this.adminService.resolveReport(reportId, status);
+  }
+
+  @Post('categories')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create a new content category' })
+  async createCategory(
+    @Body('name') name: string,
+    @Body('description') description?: string,
+  ) {
+    return this.adminService.createCategory(name, description);
+  }
+
+  @Delete('categories/:id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete a content category' })
+  async deleteCategory(@Param('id') categoryId: string) {
+    return this.adminService.deleteCategory(categoryId);
   }
 }

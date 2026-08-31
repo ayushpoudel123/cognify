@@ -34,7 +34,8 @@ export class SearchService {
       return { users, posts, categories };
     }
 
-    const searchTerm = `%${query.trim()}%`;
+    const rawTerm = query.trim().replace(/^#/, '');
+    const searchTerm = `%${rawTerm}%`;
 
     const users = await this.userRepository.find({
       where: [
@@ -45,14 +46,20 @@ export class SearchService {
       take: 10,
     });
 
-    const posts = await this.postRepository.find({
-      where: [
-        { title: ILike(searchTerm), status: PostStatus.PUBLISHED },
-        { content: ILike(searchTerm), status: PostStatus.PUBLISHED },
-      ],
-      relations: ['author', 'author.profile', 'category', 'media'],
-      take: 10,
-    });
+    const posts = await this.postRepository
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.author', 'author')
+      .leftJoinAndSelect('author.profile', 'profile')
+      .leftJoinAndSelect('post.category', 'category')
+      .leftJoinAndSelect('post.media', 'media')
+      .where('post.status = :status', { status: PostStatus.PUBLISHED })
+      .andWhere(
+        '(post.title ILike :searchTerm OR post.content ILike :searchTerm OR category.name ILike :searchTerm OR post.hashtags ILike :searchTerm)',
+        { searchTerm },
+      )
+      .orderBy('post.createdAt', 'DESC')
+      .take(15)
+      .getMany();
 
     const categories = await this.categoryRepository.find({
       where: { name: ILike(searchTerm) },

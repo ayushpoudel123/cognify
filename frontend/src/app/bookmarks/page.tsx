@@ -23,7 +23,7 @@ export default function BookmarksPage() {
       <Sidebar />
 
       <div className="flex-1 min-w-0 flex flex-col gap-6">
-        <div className="flex items-center gap-2 text-white font-bold text-xl">
+        <div className="flex items-center gap-2 text-gray-900 font-bold text-xl">
           <Bookmark className="h-6 w-6 text-secondary" />
           <span>Saved Knowledge Collection</span>
         </div>
@@ -31,7 +31,7 @@ export default function BookmarksPage() {
         {loading ? (
           <div className="flex flex-col gap-4">
             {[1, 2].map((i) => (
-              <div key={i} className="glass-card p-6 h-48 animate-pulse" />
+              <div key={i} className="bg-white rounded-2xl border border-gray-200 p-6 h-48 animate-pulse shadow-sm" />
             ))}
           </div>
         ) : bookmarks.length > 0 ? (
@@ -41,10 +41,10 @@ export default function BookmarksPage() {
             ))}
           </div>
         ) : (
-          <div className="glass-card p-12 flex flex-col items-center justify-center text-center gap-3">
+          <div className="bg-white rounded-2xl border border-gray-200 p-12 flex flex-col items-center justify-center text-center gap-3 shadow-sm">
             <Bookmark className="h-10 w-10 text-secondary/40" />
-            <h3 className="text-lg font-bold text-white">No Saved Posts Yet</h3>
-            <p className="text-sm text-gray-400 max-w-sm">
+            <h3 className="text-lg font-bold text-gray-800">No Saved Posts Yet</h3>
+            <p className="text-sm text-gray-500 max-w-sm">
               Bookmark useful educational posts while browsing to view them anytime here!
             </p>
           </div>

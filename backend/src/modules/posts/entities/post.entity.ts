@@ -7,6 +7,8 @@ import { PostMedia, PostType } from './post-media.entity';
 export enum PostStatus {
   DRAFT = 'DRAFT',
   PUBLISHED = 'PUBLISHED',
+  FLAGGED = 'FLAGGED',
+  TAKEN_DOWN = 'TAKEN_DOWN',
 }
 
 @Entity('posts')

@@ -33,24 +33,24 @@ export function RegisterForm() {
   };
 
   return (
-    <div className="glass-card p-8 w-full max-w-md mx-auto border-secondary/20 shadow-2xl">
+    <div className="w-full max-w-md mx-auto bg-white rounded-2xl border border-gray-200 p-8 shadow-card">
       <div className="flex flex-col items-center gap-2 text-center mb-8">
         <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-secondary to-primary flex items-center justify-center text-white shadow-lg shadow-secondary/30">
           <BookOpen className="h-6 w-6" />
         </div>
-        <h1 className="text-2xl font-bold text-white tracking-tight">Join Cognify</h1>
-        <p className="text-sm text-gray-400">Create your account & start sharing knowledge</p>
+        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Join Cognify</h1>
+        <p className="text-sm text-gray-500">Create your account & start sharing knowledge</p>
       </div>
 
       {error && (
-        <div className="mb-6 rounded-xl bg-red-500/10 border border-red-500/30 p-3 text-center text-sm font-medium text-red-400">
+        <div className="mb-6 rounded-xl bg-red-50 border border-red-200 p-3 text-center text-sm font-medium text-red-600">
           {error}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
-          <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
             Full Name
           </label>
           <div className="relative">
@@ -61,13 +61,13 @@ export function RegisterForm() {
               placeholder="John Doe"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="w-full rounded-xl border border-surface-border bg-surface/60 pl-10 pr-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-secondary focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary/10 transition"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
             Username
           </label>
           <div className="relative">
@@ -78,13 +78,13 @@ export function RegisterForm() {
               placeholder="johndoe"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full rounded-xl border border-surface-border bg-surface/60 pl-10 pr-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-secondary focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary/10 transition"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
             Email
           </label>
           <div className="relative">
@@ -95,13 +95,13 @@ export function RegisterForm() {
               placeholder="learner@cognify.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl border border-surface-border bg-surface/60 pl-10 pr-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-secondary focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary/10 transition"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
             Password
           </label>
           <div className="relative">
@@ -112,7 +112,7 @@ export function RegisterForm() {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-surface-border bg-surface/60 pl-10 pr-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-secondary focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary/10 transition"
             />
           </div>
         </div>
@@ -120,7 +120,7 @@ export function RegisterForm() {
         <button
           type="submit"
           disabled={loading}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-secondary to-primary py-3 text-sm font-semibold text-white shadow-lg shadow-secondary/25 hover:opacity-90 transition disabled:opacity-50"
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-secondary to-primary py-3 text-sm font-semibold text-white shadow-md shadow-secondary/20 hover:opacity-90 transition disabled:opacity-50"
         >
           <UserPlus className="h-4 w-4" />
           <span>{loading ? 'Creating Account...' : 'Get Started'}</span>

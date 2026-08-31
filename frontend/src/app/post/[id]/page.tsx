@@ -68,8 +68,8 @@ export default function PostDetailPage() {
         {post && <PostCard post={post} />}
 
         {/* Comment Input Box */}
-        <div className="glass-card p-6 flex flex-col gap-4 border-primary/20">
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col gap-4 shadow-sm">
+          <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
             <MessageSquare className="h-5 w-5 text-primary" />
             <span>Discussion ({comments.length})</span>
           </h3>
@@ -80,11 +80,11 @@ export default function PostDetailPage() {
               placeholder="Write a thoughtful comment or question..."
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              className="flex-1 rounded-xl border border-surface-border bg-surface/60 px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-primary focus:outline-none"
+              className="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/10 transition"
             />
             <button
               type="submit"
-              className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-xs font-semibold text-white hover:bg-primary-hover transition"
+              className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-xs font-semibold text-white hover:bg-primary-hover transition shadow-sm"
             >
               <Send className="h-4 w-4" />
               <span>Comment</span>
@@ -92,19 +92,19 @@ export default function PostDetailPage() {
           </form>
 
           {/* Comment Tree */}
-          <div className="flex flex-col gap-4 pt-4 border-t border-surface-border">
+          <div className="flex flex-col gap-3 pt-4 border-t border-gray-100">
             {comments.map((comment) => (
-              <div key={comment.id} className="flex flex-col gap-3 p-4 rounded-xl bg-surface/40 border border-surface-border">
+              <div key={comment.id} className="flex flex-col gap-2 p-3.5 rounded-xl bg-gray-50 border border-gray-100">
                 <div className="flex items-center gap-2">
-                  <div className="h-7 w-7 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">
+                  <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs border border-primary/20">
                     {comment.author?.username?.[0]?.toUpperCase()}
                   </div>
-                  <span className="text-xs font-bold text-white">@{comment.author?.username}</span>
-                  <span className="text-[10px] text-gray-500">
+                  <span className="text-xs font-bold text-gray-900">@{comment.author?.username}</span>
+                  <span className="text-[10px] text-gray-400">
                     {new Date(comment.createdAt).toLocaleDateString()}
                   </span>
                 </div>
-                <p className="text-xs text-gray-300 pl-9">{comment.content}</p>
+                <p className="text-xs text-gray-700 pl-9">{comment.content}</p>
               </div>
             ))}
           </div>
