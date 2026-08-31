@@ -18,18 +18,19 @@ async function seed() {
   const adminId = 'a0000000-0000-0000-0000-000000000001';
   const adminProfileId = 'a0000000-0000-0000-0000-000000000002';
 
-  await client.query(
+  let adminRes = await client.query(
     `INSERT INTO users (id, email, username, "passwordHash", role, "isVerified", "isActive") 
      VALUES ($1, $2, $3, $4, $5, $6, $7) 
-     ON CONFLICT (email) DO UPDATE SET role='ADMIN', "passwordHash"=$4`,
+     ON CONFLICT (email) DO UPDATE SET role='ADMIN', "passwordHash"=$4 RETURNING id`,
     [adminId, 'admin@cognify.com', 'admin', adminHash, 'ADMIN', true, true]
   );
+  const actualAdminId = adminRes.rows[0].id;
 
   await client.query(
     `INSERT INTO profiles (id, "fullName", bio, "userId") 
      VALUES ($1, $2, $3, $4) 
      ON CONFLICT ("userId") DO NOTHING`,
-    [adminProfileId, 'System Administrator', 'Cognify Lead Administrator', adminId]
+    [adminProfileId, 'System Administrator', 'Cognify Lead Administrator', actualAdminId]
   );
 
   // --- Sample Users ---
@@ -45,20 +46,22 @@ async function seed() {
   for (const u of users) {
     const userId = uuidv4();
     const profileId = uuidv4();
-    userIds[u.username] = userId;
 
-    await client.query(
+    let res = await client.query(
       `INSERT INTO users (id, email, username, "passwordHash", role, "isVerified", "isActive") 
        VALUES ($1, $2, $3, $4, 'USER', true, true) 
-       ON CONFLICT (email) DO NOTHING`,
+       ON CONFLICT (email) DO UPDATE SET "isActive"=true RETURNING id`,
       [userId, u.email, u.username, userPassword]
     );
+    
+    const actualUserId = res.rows[0].id;
+    userIds[u.username] = actualUserId;
 
     await client.query(
       `INSERT INTO profiles (id, "fullName", bio, "userId") 
        VALUES ($1, $2, $3, $4) 
        ON CONFLICT ("userId") DO NOTHING`,
-      [profileId, u.fullName, u.bio, userId]
+      [profileId, u.fullName, u.bio, actualUserId]
     );
   }
 
@@ -87,8 +90,8 @@ async function seed() {
 
     const postId = uuidv4();
     await client.query(
-      `INSERT INTO posts (id, title, content, "authorId", "isPublished", "publishedAt") 
-       VALUES ($1, $2, $3, $4, true, NOW()) 
+      `INSERT INTO posts (id, title, content, "authorId", status) 
+       VALUES ($1, $2, $3, $4, 'PUBLISHED') 
        ON CONFLICT DO NOTHING`,
       [postId, post.title, post.content, authorId]
     );
