@@ -1,14 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/shared/providers/AuthProvider';
 import { authApi } from '../api';
 import { User, Mail, Lock, UserPlus, BookOpen } from 'lucide-react';
 
 export function RegisterForm() {
   const router = useRouter();
-  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [fullName, setFullName] = useState('');
@@ -22,9 +21,8 @@ export function RegisterForm() {
     setLoading(true);
 
     try {
-      const res: any = await authApi.register({ email, username, fullName, password });
-      login(res.data);
-      router.push('/');
+      await authApi.register({ email, username, fullName, password });
+      router.push(`/login?registered=true&identifier=${encodeURIComponent(username || email)}`);
     } catch (err: any) {
       setError(err.message || 'Registration failed');
     } finally {
@@ -126,6 +124,13 @@ export function RegisterForm() {
           <span>{loading ? 'Creating Account...' : 'Get Started'}</span>
         </button>
       </form>
+
+      <div className="mt-6 pt-5 border-t border-gray-100 text-center text-sm text-gray-500">
+        Already have an account?{' '}
+        <Link href="/login" className="text-primary font-semibold hover:underline">
+          Log in here
+        </Link>
+      </div>
     </div>
   );
 }

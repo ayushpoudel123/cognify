@@ -20,6 +20,7 @@ import {
   Eye,
   AlertTriangle,
 } from 'lucide-react';
+import { FlagPostModal } from '@/features/posts/components/FlagPostModal';
 
 export default function AdminPage() {
   const router = useRouter();
@@ -34,6 +35,12 @@ export default function AdminPage() {
   const [newCatName, setNewCatName] = useState('');
   const [newCatDesc, setNewCatDesc] = useState('');
   const [loading, setLoading] = useState(true);
+
+  // Flag Post Modal State
+  const [flagModalOpen, setFlagModalOpen] = useState(false);
+  const [selectedPostToFlag, setSelectedPostToFlag] = useState<any>(null);
+  const [flagInitialReason, setFlagInitialReason] = useState<string | undefined>(undefined);
+  const [activeReportId, setActiveReportId] = useState<string | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -78,13 +85,25 @@ export default function AdminPage() {
     }
   };
 
-  const handleUpdatePostStatus = async (postId: string, status: string) => {
+  const handleUpdatePostStatus = async (postId: string, status: string, reason?: string) => {
     try {
-      await apiClient.patch(`/admin/posts/${postId}/status`, { status });
+      await apiClient.patch(`/admin/posts/${postId}/status`, { status, reason });
       fetchData();
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const handleFlagSuccess = async () => {
+    if (activeReportId) {
+      try {
+        await apiClient.patch(`/admin/reports/${activeReportId}/resolve`, { status: 'ACTIONED' });
+      } catch (err) {
+        console.error(err);
+      }
+      setActiveReportId(null);
+    }
+    fetchData();
   };
 
   const handleDeletePost = async (postId: string) => {
@@ -357,6 +376,11 @@ export default function AdminPage() {
                       </div>
                       <h4 className="text-sm font-bold text-gray-900">{p.title}</h4>
                       <p className="text-xs text-gray-600 line-clamp-2">{p.content}</p>
+                      {isFlagged && p.flagReason && (
+                        <div className="mt-1 inline-block rounded-lg border border-amber-200 bg-amber-100/70 px-2.5 py-1 text-[11px] font-medium text-amber-900">
+                          ⚠️ <strong>Flag Reason:</strong> {p.flagReason}
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-2 flex-wrap shrink-0">
@@ -371,11 +395,16 @@ export default function AdminPage() {
                       ) : (
                         <>
                           <button
-                            onClick={() => handleUpdatePostStatus(p.id, 'FLAGGED')}
-                            className="flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-100 transition"
+                            onClick={() => {
+                              setSelectedPostToFlag(p);
+                              setFlagInitialReason(undefined);
+                              setActiveReportId(null);
+                              setFlagModalOpen(true);
+                            }}
+                            className="flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-100 transition shadow-sm"
                           >
                             <Flag className="h-3.5 w-3.5" />
-                            <span>Flag</span>
+                            <span>Flag with Reason</span>
                           </button>
                           <button
                             onClick={() => handleUpdatePostStatus(p.id, 'TAKEN_DOWN')}
@@ -450,15 +479,60 @@ export default function AdminPage() {
             {reports.length > 0 ? (
               <div className="flex flex-col gap-3">
                 {reports.map((r) => (
-                  <div key={r.id} className="p-4 rounded-xl border border-gray-200 bg-gray-50 flex items-start justify-between gap-4">
-                    <div className="flex flex-col gap-1 min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
+                  <div key={r.id} className="p-4 rounded-xl border border-gray-200 bg-gray-50 flex flex-col sm:flex-row items-start justify-between gap-4">
+                    <div className="flex flex-col gap-1.5 min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs font-semibold text-gray-900">Reporter: @{r.reporter?.username}</span>
                         <span className="text-[10px] px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold uppercase">{r.reason}</span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase ${
+                          r.status === 'ACTIONED' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
+                          r.status === 'DISMISSED' ? 'bg-gray-200 text-gray-700' : 'bg-amber-50 text-amber-700 border border-amber-200'
+                        }`}>{r.status}</span>
                       </div>
-                      <p className="text-xs text-gray-700 mt-1">{r.details || 'No details specified.'}</p>
+
+                      {r.targetType === 'POST' && (
+                        <div className="p-2.5 rounded-lg bg-white border border-gray-200 text-xs">
+                          <span className="font-semibold text-primary block">{r.post?.title || `Target Post (${r.targetId})`}</span>
+                          {r.post?.author?.username && (
+                            <span className="text-[10px] text-gray-400">Author: @{r.post.author.username}</span>
+                          )}
+                        </div>
+                      )}
+
+                      <p className="text-xs text-gray-700 mt-0.5 leading-relaxed">
+                        <strong>Details:</strong> {r.details || 'No additional details specified.'}
+                      </p>
                     </div>
-                    <span className="text-xs font-semibold text-gray-500">{r.status}</span>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {r.targetType === 'POST' && r.status !== 'ACTIONED' && (
+                        <button
+                          onClick={() => {
+                            const targetPost = r.post || { id: r.targetId, title: 'Reported Post', author: null };
+                            setSelectedPostToFlag(targetPost);
+                            setFlagInitialReason(`${r.reason}: ${r.details || 'Violates community guidelines'}`);
+                            setActiveReportId(r.id);
+                            setFlagModalOpen(true);
+                          }}
+                          className="flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-100 transition shadow-sm"
+                        >
+                          <Flag className="h-3.5 w-3.5" />
+                          <span>Flag Post with Reason</span>
+                        </button>
+                      )}
+
+                      {r.status === 'PENDING' && (
+                        <button
+                          onClick={async () => {
+                            await apiClient.patch(`/admin/reports/${r.id}/resolve`, { status: 'DISMISSED' });
+                            fetchData();
+                          }}
+                          className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition"
+                        >
+                          <span>Dismiss</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -521,6 +595,18 @@ export default function AdminPage() {
           </div>
         )}
       </div>
+
+      {/* Flag Post Modal */}
+      <FlagPostModal
+        isOpen={flagModalOpen}
+        onClose={() => {
+          setFlagModalOpen(false);
+          setActiveReportId(null);
+        }}
+        post={selectedPostToFlag}
+        initialReason={flagInitialReason}
+        onFlagSuccess={handleFlagSuccess}
+      />
     </div>
   );
 }

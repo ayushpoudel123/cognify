@@ -8,7 +8,22 @@ import { PostCard } from '@/features/posts/components/PostCard';
 import { useAuth } from '@/shared/providers/AuthProvider';
 import { apiClient } from '@/shared/lib/axios';
 import { getMediaUrl } from '@/shared/lib/utils';
-import { User, Award, BookOpen, Globe, UserPlus, UserCheck, MessageSquare, Camera, X, Users } from 'lucide-react';
+import { EditProfileModal } from '@/features/profile/components/EditProfileModal';
+import {
+  User,
+  Award,
+  BookOpen,
+  Globe,
+  UserPlus,
+  UserCheck,
+  MessageSquare,
+  Camera,
+  X,
+  Users,
+  Edit3,
+  ShieldCheck,
+  FileText,
+} from 'lucide-react';
 
 export default function ProfilePage() {
   const params = useParams();
@@ -19,11 +34,28 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+
+  // User's Educational Posts
+  const [userPosts, setUserPosts] = useState<any[]>([]);
+  const [postsLoading, setPostsLoading] = useState(false);
 
   // Modals for Followers & Following Lists
   const [modalType, setModalType] = useState<'followers' | 'following' | null>(null);
   const [modalUsers, setModalUsers] = useState<any[]>([]);
   const [modalLoading, setModalLoading] = useState(false);
+
+  const fetchUserPosts = async (userId: string) => {
+    setPostsLoading(true);
+    try {
+      const res: any = await apiClient.get(`/posts/user/${userId}`);
+      setUserPosts(res.data || []);
+    } catch (err) {
+      console.error('Failed to load user posts:', err);
+    } finally {
+      setPostsLoading(false);
+    }
+  };
 
   const fetchProfile = async () => {
     if (params?.username) {
@@ -31,6 +63,9 @@ export default function ProfilePage() {
       try {
         const res: any = await apiClient.get(`/users/profile/${params.username}`);
         setProfileUser(res.data);
+        if (res.data?.id) {
+          fetchUserPosts(res.data.id);
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -140,6 +175,7 @@ export default function ProfilePage() {
 
   const profile = profileUser.profile || {};
   const isSelf = currentUser?.id === profileUser.id;
+  const isAdmin = profileUser.role === 'ADMIN';
 
   return (
     <div className="flex gap-8 items-start">
@@ -183,66 +219,90 @@ export default function ProfilePage() {
 
               {/* Action Buttons */}
               <div className="flex items-center gap-3">
-                {!isSelf && currentUser?.role !== 'ADMIN' && (
-                  <>
-                    <button
-                      onClick={handleDirectMessage}
-                      className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2 text-xs font-semibold text-gray-800 hover:bg-gray-100 transition"
-                    >
-                      <MessageSquare className="h-4 w-4 text-primary" />
-                      <span>Message</span>
-                    </button>
+                {isSelf ? (
+                  <button
+                    onClick={() => setIsEditProfileOpen(true)}
+                    className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-800 hover:bg-gray-50 shadow-sm transition"
+                  >
+                    <Edit3 className="h-3.5 w-3.5 text-primary" />
+                    <span>Edit Profile</span>
+                  </button>
+                ) : isAdmin ? (
+                  <div className="flex items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-1.5 text-xs font-bold text-amber-700 shadow-sm">
+                    <ShieldCheck className="h-4 w-4" />
+                    <span>Administrator</span>
+                  </div>
+                ) : (
+                  currentUser?.role !== 'ADMIN' && (
+                    <>
+                      <button
+                        onClick={handleDirectMessage}
+                        className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2 text-xs font-semibold text-gray-800 hover:bg-gray-100 transition"
+                      >
+                        <MessageSquare className="h-4 w-4 text-primary" />
+                        <span>Message</span>
+                      </button>
 
-                    <button
-                      onClick={handleFollowToggle}
-                      className={`flex items-center gap-2 rounded-xl px-5 py-2 text-xs font-semibold shadow-md transition ${
-                        isFollowing
-                          ? 'bg-gray-100 border border-gray-300 text-gray-700 hover:text-red-500 hover:border-red-300'
-                          : 'bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90'
-                      }`}
-                    >
-                      {isFollowing ? (
-                        <>
-                          <UserCheck className="h-4 w-4" />
-                          <span>Following</span>
-                        </>
-                      ) : (
-                        <>
-                          <UserPlus className="h-4 w-4" />
-                          <span>Follow</span>
-                        </>
-                      )}
-                    </button>
-                  </>
+                      <button
+                        onClick={handleFollowToggle}
+                        className={`flex items-center gap-2 rounded-xl px-5 py-2 text-xs font-semibold shadow-md transition ${
+                          isFollowing
+                            ? 'bg-gray-100 border border-gray-300 text-gray-700 hover:text-red-500 hover:border-red-300'
+                            : 'bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90'
+                        }`}
+                      >
+                        {isFollowing ? (
+                          <>
+                            <UserCheck className="h-4 w-4" />
+                            <span>Following</span>
+                          </>
+                        ) : (
+                          <>
+                            <UserPlus className="h-4 w-4" />
+                            <span>Follow</span>
+                          </>
+                        )}
+                      </button>
+                    </>
+                  )
                 )}
               </div>
             </div>
 
             <div className="flex flex-col gap-1 mt-2">
-              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-                {profile.fullName || profileUser.username}
-              </h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+                  {profile.fullName || profileUser.username}
+                </h1>
+                {isAdmin && (
+                  <span className="rounded-md bg-amber-100 border border-amber-200 px-2 py-0.5 text-[11px] font-bold text-amber-800">
+                    ADMIN
+                  </span>
+                )}
+              </div>
               <span className="text-sm font-medium text-gray-500">@{profileUser.username}</span>
             </div>
 
-            {/* Followers & Following Interactive Stats */}
-            <div className="flex items-center gap-6 py-2 border-y border-gray-100 my-1">
-              <button
-                onClick={() => openListModal('followers')}
-                className="flex items-center gap-1.5 text-sm hover:text-primary transition"
-              >
-                <span className="font-bold text-gray-900 text-base">{profileUser.followersCount || 0}</span>
-                <span className="text-gray-500">Followers</span>
-              </button>
+            {/* Followers & Following Interactive Stats (Hidden on Admin profiles) */}
+            {!isAdmin && (
+              <div className="flex items-center gap-6 py-2 border-y border-gray-100 my-1">
+                <button
+                  onClick={() => openListModal('followers')}
+                  className="flex items-center gap-1.5 text-sm hover:text-primary transition"
+                >
+                  <span className="font-bold text-gray-900 text-base">{profileUser.followersCount || 0}</span>
+                  <span className="text-gray-500">Followers</span>
+                </button>
 
-              <button
-                onClick={() => openListModal('following')}
-                className="flex items-center gap-1.5 text-sm hover:text-primary transition"
-              >
-                <span className="font-bold text-gray-900 text-base">{profileUser.followingCount || 0}</span>
-                <span className="text-gray-500">Following</span>
-              </button>
-            </div>
+                <button
+                  onClick={() => openListModal('following')}
+                  className="flex items-center gap-1.5 text-sm hover:text-primary transition"
+                >
+                  <span className="font-bold text-gray-900 text-base">{profileUser.followingCount || 0}</span>
+                  <span className="text-gray-500">Following</span>
+                </button>
+              </div>
+            )}
 
             {profile.bio && (
               <p className="text-sm text-gray-700 leading-relaxed max-w-2xl">{profile.bio}</p>
@@ -283,6 +343,46 @@ export default function ProfilePage() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* User's Educational Posts Section */}
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+              <FileText className="h-4 w-4 text-primary" />
+              <span>
+                {isSelf ? 'My Educational Posts' : `${profileUser.username}'s Posts`} ({userPosts.length})
+              </span>
+            </h2>
+          </div>
+
+          {postsLoading ? (
+            <div className="flex flex-col gap-4">
+              <div className="glass-card p-6 h-36 animate-pulse bg-gray-50 rounded-2xl" />
+              <div className="glass-card p-6 h-36 animate-pulse bg-gray-50 rounded-2xl" />
+            </div>
+          ) : userPosts.length > 0 ? (
+            <div className="flex flex-col gap-4">
+              {userPosts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  onPostUpdated={() => fetchUserPosts(profileUser.id)}
+                  onPostDeleted={() => fetchUserPosts(profileUser.id)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="glass-card p-12 text-center flex flex-col items-center justify-center gap-2 border-dashed border-gray-200">
+              <BookOpen className="h-8 w-8 text-gray-300" />
+              <span className="text-sm font-semibold text-gray-700">No educational posts published yet</span>
+              <p className="text-xs text-gray-400 max-w-sm">
+                {isSelf
+                  ? 'Share study notes, tutorials, or insights with the Cognify learning community!'
+                  : 'This user has not created any educational posts yet.'}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -336,6 +436,17 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
+
+      {/* Edit Profile Modal (Full Name & Username) */}
+      <EditProfileModal
+        isOpen={isEditProfileOpen}
+        onClose={() => setIsEditProfileOpen(false)}
+        profileUser={profileUser}
+        onProfileUpdated={(updated) => {
+          setProfileUser(updated);
+          fetchProfile();
+        }}
+      />
     </div>
   );
 }

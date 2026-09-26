@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, In } from 'typeorm';
 import { User, UserRole } from './entities/user.entity';
@@ -85,12 +90,38 @@ export class UsersService {
   }
 
   async updateProfile(userId: string, updateProfileDto: UpdateProfileDto) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (updateProfileDto.username) {
+      const cleanUsername = updateProfileDto.username.trim().toLowerCase();
+      if (!/^[a-zA-Z0-9_]{3,30}$/.test(cleanUsername)) {
+        throw new BadRequestException(
+          'Username must be between 3 and 30 characters and can only contain letters, numbers, and underscores',
+        );
+      }
+
+      if (cleanUsername !== user.username) {
+        const existing = await this.userRepository.findOne({
+          where: { username: cleanUsername, id: Not(userId) },
+        });
+        if (existing) {
+          throw new ConflictException('Username is already taken');
+        }
+        user.username = cleanUsername;
+        await this.userRepository.save(user);
+      }
+    }
+
     let profile = await this.profileRepository.findOne({ where: { userId } });
     if (!profile) {
       profile = this.profileRepository.create({ userId });
     }
 
-    Object.assign(profile, updateProfileDto);
+    const { username, ...profileData } = updateProfileDto;
+    Object.assign(profile, profileData);
     await this.profileRepository.save(profile);
 
     return this.findById(userId);

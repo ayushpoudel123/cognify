@@ -8,8 +8,13 @@ import { Report } from '../communication/entities';
 import { Comment } from '../comments/entities/comment.entity';
 import { Category } from '../posts/entities/category.entity';
 
+import { NotificationsModule } from '../notifications/notifications.module';
+
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Post, Report, Comment, Category])],
+  imports: [
+    TypeOrmModule.forFeature([User, Post, Report, Comment, Category]),
+    NotificationsModule,
+  ],
   controllers: [AdminController],
   providers: [AdminService],
 })

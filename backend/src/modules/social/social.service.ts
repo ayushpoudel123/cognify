@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Reaction, TargetType, ReactionType, Bookmark, Follow } from './entities';
 import { Post } from '../posts/entities/post.entity';
-import { User } from '../users/entities/user.entity';
+import { User, UserRole } from '../users/entities/user.entity';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../communication/entities';
 
@@ -93,6 +93,9 @@ export class SocialService {
 
     const targetUser = await this.userRepository.findOne({ where: { id: followingId } });
     if (!targetUser) throw new NotFoundException('User to follow not found');
+    if (targetUser.role === UserRole.ADMIN) {
+      throw new ConflictException('Administrator accounts cannot be followed');
+    }
 
     const existing = await this.followRepository.findOne({
       where: { followerId, followingId },

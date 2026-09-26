@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { AuthProvider } from '@/shared/providers/AuthProvider';
-import { Navbar } from '@/shared/components/layout/Navbar';
+import { AppShell } from '@/shared/components/layout/AppShell';
 import '@/shared/styles/globals.css';
 
 export const metadata: Metadata = {
@@ -23,12 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <AuthProvider>
-          <div className="min-h-screen flex flex-col bg-background text-text-primary">
-            <Navbar />
-            <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-              {children}
-            </main>
-          </div>
+          <AppShell>{children}</AppShell>
         </AuthProvider>
       </body>
     </html>

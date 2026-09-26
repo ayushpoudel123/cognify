@@ -113,6 +113,21 @@ export class PostsService {
     return { message: 'Post deleted successfully' };
   }
 
+  async findByUser(authorId: string, currentUserId?: string) {
+    const isSelf = currentUserId && currentUserId === authorId;
+    let whereCondition: any = { authorId };
+
+    if (!isSelf) {
+      whereCondition.status = PostStatus.PUBLISHED;
+    }
+
+    return this.postRepository.find({
+      where: whereCondition,
+      relations: ['author', 'author.profile', 'category', 'media', 'tags'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
   async getCategories() {
     return this.categoryRepository.find();
   }

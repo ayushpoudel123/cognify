@@ -61,6 +61,8 @@ export enum NotificationType {
   FOLLOW = 'FOLLOW',
   MENTION = 'MENTION',
   MESSAGE = 'MESSAGE',
+  REPORT = 'REPORT',
+  POST_FLAGGED = 'POST_FLAGGED',
 }
 
 @Entity('notifications')

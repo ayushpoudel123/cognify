@@ -2,11 +2,22 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Heart, MessageSquare, Bookmark, Eye, Edit3, Trash2, MoreVertical } from 'lucide-react';
+import {
+  Heart,
+  MessageSquare,
+  Bookmark,
+  Eye,
+  Edit3,
+  Trash2,
+  MoreVertical,
+  AlertTriangle,
+  ShieldAlert,
+} from 'lucide-react';
 import { postsApi } from '../api';
 import { getMediaUrl } from '@/shared/lib/utils';
 import { useAuth } from '@/shared/providers/AuthProvider';
 import { EditPostModal } from './EditPostModal';
+import { ReportPostModal } from './ReportPostModal';
 import { apiClient } from '@/shared/lib/axios';
 
 interface PostCardProps {
@@ -23,6 +34,7 @@ export function PostCard({ post, onPostUpdated, onPostDeleted, onRequireAuth }: 
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
 
   const isAuthor = currentUser && (currentUser.id === post.authorId || currentUser.id === post.author?.id);
 
@@ -96,43 +108,81 @@ export function PostCard({ post, onPostUpdated, onPostDeleted, onRequireAuth }: 
               </span>
             )}
 
-            {isAuthor && (
-              <div className="relative">
-                <button
-                  onClick={() => setShowMenu(!showMenu)}
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition"
-                >
-                  <MoreVertical className="h-4 w-4" />
-                </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowMenu(!showMenu)}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition"
+              >
+                <MoreVertical className="h-4 w-4" />
+              </button>
 
-                {showMenu && (
-                  <div className="absolute right-0 top-8 z-20 w-36 bg-white rounded-xl p-1.5 shadow-xl border border-gray-200 flex flex-col gap-1 animate-in fade-in zoom-in duration-100">
+              {showMenu && (
+                <div className="absolute right-0 top-8 z-20 w-36 bg-white rounded-xl p-1.5 shadow-xl border border-gray-200 flex flex-col gap-1 animate-in fade-in zoom-in duration-100">
+                  {isAuthor ? (
+                    <>
+                      <button
+                        onClick={() => {
+                          setShowMenu(false);
+                          setIsEditOpen(true);
+                        }}
+                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:text-primary hover:bg-gray-50 rounded-lg transition"
+                      >
+                        <Edit3 className="h-3.5 w-3.5" />
+                        <span>Edit Post</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowMenu(false);
+                          handleDelete();
+                        }}
+                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-50 rounded-lg transition"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        <span>Delete</span>
+                      </button>
+                    </>
+                  ) : (
                     <button
                       onClick={() => {
                         setShowMenu(false);
-                        setIsEditOpen(true);
+                        if (!currentUser) {
+                          if (onRequireAuth) onRequireAuth();
+                          else window.location.href = '/login';
+                          return;
+                        }
+                        setIsReportOpen(true);
                       }}
-                      className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:text-primary hover:bg-gray-50 rounded-lg transition"
+                      className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg transition"
                     >
-                      <Edit3 className="h-3.5 w-3.5" />
-                      <span>Edit Post</span>
+                      <ShieldAlert className="h-3.5 w-3.5" />
+                      <span>Report Post</span>
                     </button>
-                    <button
-                      onClick={() => {
-                        setShowMenu(false);
-                        handleDelete();
-                      }}
-                      className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-50 rounded-lg transition"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      <span>Delete</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
+
+        {/* Flagged Alert Banner */}
+        {post.status === 'FLAGGED' && (
+          <div className="rounded-xl bg-amber-50 border border-amber-200 p-3.5 flex items-start gap-3 text-xs text-amber-900">
+            <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
+            <div className="flex flex-col gap-0.5">
+              <span className="font-bold text-amber-950 flex items-center gap-1.5">
+                Post Flagged by Moderation
+              </span>
+              <p className="text-amber-800 text-[11px] leading-relaxed">
+                <strong>Reason:</strong> {post.flagReason || 'Violated educational community guidelines'}
+              </p>
+              {isAuthor && (
+                <span className="text-[10px] text-amber-700/80 mt-0.5">
+                  Tip: You can use the edit button above to update and rectify your post.
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Title & Content */}
         <div className="flex flex-col gap-2">
@@ -215,6 +265,12 @@ export function PostCard({ post, onPostUpdated, onPostDeleted, onRequireAuth }: 
         post={post}
         onClose={() => setIsEditOpen(false)}
         onPostUpdated={onPostUpdated}
+      />
+
+      <ReportPostModal
+        isOpen={isReportOpen}
+        post={post}
+        onClose={() => setIsReportOpen(false)}
       />
     </>
   );

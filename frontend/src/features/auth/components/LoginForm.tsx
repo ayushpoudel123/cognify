@@ -1,19 +1,31 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/shared/providers/AuthProvider';
 import { authApi } from '../api';
-import { BookOpen, Mail, Lock, LogIn } from 'lucide-react';
+import { BookOpen, Mail, Lock, LogIn, CheckCircle2 } from 'lucide-react';
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
   const [emailOrUsername, setEmailOrUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [registeredSuccess, setRegisteredSuccess] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('registered') === 'true') {
+      setRegisteredSuccess(true);
+      const identifier = searchParams.get('identifier');
+      if (identifier) {
+        setEmailOrUsername(identifier);
+      }
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +52,13 @@ export function LoginForm() {
         <h1 className="text-xl font-bold text-gray-900">Welcome back to Cognify</h1>
         <p className="text-sm text-gray-500">Log in to your learning account</p>
       </div>
+
+      {registeredSuccess && (
+        <div className="mb-5 rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-center text-xs font-semibold text-emerald-700 flex items-center justify-center gap-2">
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+          <span>Account created successfully! Please log in below.</span>
+        </div>
+      )}
 
       {error && (
         <div className="mb-5 rounded-xl bg-red-50 border border-red-200 p-3 text-center text-sm font-medium text-red-600">

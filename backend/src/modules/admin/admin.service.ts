@@ -3,9 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { Post, PostStatus } from '../posts/entities/post.entity';
-import { Report, ReportStatus } from '../communication/entities';
+import { Report, ReportStatus, NotificationType } from '../communication/entities';
 import { Comment } from '../comments/entities/comment.entity';
 import { Category } from '../posts/entities/category.entity';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class AdminService {
@@ -20,6 +21,7 @@ export class AdminService {
     private commentRepository: Repository<Comment>,
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
+    private notificationsService: NotificationsService,
   ) {}
 
   async getPlatformStats() {
@@ -60,12 +62,51 @@ export class AdminService {
     });
   }
 
-  async updatePostStatus(postId: string, status: PostStatus) {
-    const post = await this.postRepository.findOne({ where: { id: postId } });
+  async updatePostStatus(
+    postId: string,
+    status: PostStatus,
+    reason?: string,
+    adminId?: string,
+  ) {
+    const post = await this.postRepository.findOne({
+      where: { id: postId },
+      relations: ['author'],
+    });
     if (!post) throw new NotFoundException('Post not found');
 
     post.status = status;
-    return this.postRepository.save(post);
+
+    if (status === PostStatus.FLAGGED) {
+      post.flagReason = reason || 'Content violates educational community guidelines';
+      await this.postRepository.save(post);
+
+      // Notify post author with the flag reason
+      await this.notificationsService.createNotification(
+        post.authorId,
+        adminId || post.authorId,
+        NotificationType.POST_FLAGGED,
+        post.id,
+        `Your post "${post.title}" has been flagged by administration. Reason: ${post.flagReason}`,
+      );
+    } else {
+      if (status === PostStatus.PUBLISHED) {
+        post.flagReason = null;
+        await this.postRepository.save(post);
+
+        // Notify author that post has been restored
+        await this.notificationsService.createNotification(
+          post.authorId,
+          adminId || post.authorId,
+          NotificationType.POST_FLAGGED,
+          post.id,
+          `Your post "${post.title}" has been reviewed and restored to published status.`,
+        );
+      } else {
+        await this.postRepository.save(post);
+      }
+    }
+
+    return post;
   }
 
   async deletePost(postId: string) {
@@ -93,10 +134,26 @@ export class AdminService {
   }
 
   async getAllReports() {
-    return this.reportRepository.find({
+    const reports = await this.reportRepository.find({
       relations: ['reporter', 'reporter.profile'],
       order: { createdAt: 'DESC' },
     });
+
+    // Populate target post details for post reports
+    const populatedReports = await Promise.all(
+      reports.map(async (report) => {
+        if (report.targetType === 'POST') {
+          const post = await this.postRepository.findOne({
+            where: { id: report.targetId },
+            relations: ['author', 'author.profile'],
+          });
+          return { ...report, post };
+        }
+        return report;
+      }),
+    );
+
+    return populatedReports;
   }
 
   async resolveReport(reportId: string, status: ReportStatus) {

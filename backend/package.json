@@ -12,6 +12,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "seed": "node src/seed.js",
+    "create:admin": "node scripts/create-admin.js",
     "typeorm": "typeorm-ts-node-commonjs"
   },
   "dependencies": {

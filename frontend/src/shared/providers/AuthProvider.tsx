@@ -20,6 +20,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (data: { user: any; accessToken: string; refreshToken: string }) => void;
   logout: () => void;
+  updateUser: (updated: any) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -28,6 +29,7 @@ const AuthContext = createContext<AuthContextType>({
   isLoading: true,
   login: () => {},
   logout: () => {},
+  updateUser: () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -71,8 +73,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     window.location.href = '/login';
   };
 
+  const updateUser = (updated: any) => {
+    setUser((prev: any) => (prev ? { ...prev, ...updated } : updated));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, logout, updateUser }}>
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </AuthContext.Provider>
   );

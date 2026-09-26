@@ -25,6 +25,9 @@ export class Post extends AppBaseEntity {
   @Column({ type: 'enum', enum: PostStatus, default: PostStatus.PUBLISHED })
   status: PostStatus;
 
+  @Column({ type: 'text', nullable: true })
+  flagReason: string;
+
   @Column({ default: 0 })
   viewsCount: number;
 

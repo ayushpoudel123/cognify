@@ -41,6 +41,16 @@ export class PostsController {
   }
 
   @Public()
+  @Get('user/:userId')
+  @ApiOperation({ summary: 'Get posts authored by a user' })
+  async findByUser(
+    @Param('userId') userId: string,
+    @CurrentUser('id') currentUserId?: string,
+  ) {
+    return this.postsService.findByUser(userId, currentUserId);
+  }
+
+  @Public()
   @Get(':id')
   @ApiOperation({ summary: 'Get post details by ID' })
   async findOne(@Param('id') id: string) {

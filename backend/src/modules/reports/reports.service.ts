@@ -26,11 +26,21 @@ export class CreateReportDto {
   details?: string;
 }
 
+import { User, UserRole } from '../users/entities/user.entity';
+import { Post } from '../posts/entities/post.entity';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../communication/entities';
+
 @Injectable()
 export class ReportsService {
   constructor(
     @InjectRepository(Report)
     private reportRepository: Repository<Report>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+    @InjectRepository(Post)
+    private postRepository: Repository<Post>,
+    private notificationsService: NotificationsService,
   ) {}
 
   async createReport(reporterId: string, dto: CreateReportDto) {
@@ -41,7 +51,35 @@ export class ReportsService {
       reason: dto.reason,
       details: dto.details,
     });
-    return this.reportRepository.save(report);
+    const savedReport = await this.reportRepository.save(report);
+
+    // Notify all administrators about the new report
+    try {
+      const reporter = await this.userRepository.findOne({ where: { id: reporterId } });
+      let targetTitle = 'Content';
+
+      if (dto.targetType === 'POST') {
+        const post = await this.postRepository.findOne({ where: { id: dto.targetId } });
+        if (post) {
+          targetTitle = `post "${post.title}"`;
+        }
+      }
+
+      const admins = await this.userRepository.find({ where: { role: UserRole.ADMIN } });
+      for (const admin of admins) {
+        await this.notificationsService.createNotification(
+          admin.id,
+          reporterId,
+          NotificationType.REPORT,
+          dto.targetId,
+          `New report submitted on ${targetTitle} by @${reporter?.username || 'user'} for ${dto.reason}`,
+        );
+      }
+    } catch (err) {
+      console.error('Failed to notify admins of report:', err);
+    }
+
+    return savedReport;
   }
 
   async getAllReports() {

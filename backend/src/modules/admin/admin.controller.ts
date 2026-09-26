@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Patch, Delete, Param, UseGuards, Body } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
-import { Roles } from '../../common/decorators';
+import { Roles, CurrentUser } from '../../common/decorators';
 import { UserRole } from '../users/entities/user.entity';
 import { RolesGuard } from '../../common/guards';
 import { ReportStatus } from '../communication/entities';
@@ -48,8 +48,10 @@ export class AdminController {
   async updatePostStatus(
     @Param('id') postId: string,
     @Body('status') status: PostStatus,
+    @Body('reason') reason?: string,
+    @CurrentUser('id') adminId?: string,
   ) {
-    return this.adminService.updatePostStatus(postId, status);
+    return this.adminService.updatePostStatus(postId, status, reason, adminId);
   }
 
   @Delete('posts/:id')
