@@ -63,7 +63,7 @@ export default function ProfilePage() {
       try {
         const res: any = await apiClient.get(`/users/profile/${params.username}`);
         setProfileUser(res.data);
-        if (res.data?.id) {
+        if (res.data?.id && res.data?.role !== 'ADMIN') {
           fetchUserPosts(res.data.id);
         }
       } catch (err) {
@@ -345,45 +345,59 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* User's Educational Posts Section */}
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
-              <FileText className="h-4 w-4 text-primary" />
-              <span>
-                {isSelf ? 'My Educational Posts' : `${profileUser.username}'s Posts`} ({userPosts.length})
-              </span>
-            </h2>
-          </div>
+        {/* User's Educational Posts Section (Hidden on Admin profiles) */}
+        {!isAdmin ? (
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" />
+                <span>
+                  {isSelf ? 'My Educational Posts' : `${profileUser.username}'s Posts`} ({userPosts.length})
+                </span>
+              </h2>
+            </div>
 
-          {postsLoading ? (
-            <div className="flex flex-col gap-4">
-              <div className="glass-card p-6 h-36 animate-pulse bg-gray-50 rounded-2xl" />
-              <div className="glass-card p-6 h-36 animate-pulse bg-gray-50 rounded-2xl" />
+            {postsLoading ? (
+              <div className="flex flex-col gap-4">
+                <div className="glass-card p-6 h-36 animate-pulse bg-gray-50 rounded-2xl" />
+                <div className="glass-card p-6 h-36 animate-pulse bg-gray-50 rounded-2xl" />
+              </div>
+            ) : userPosts.length > 0 ? (
+              <div className="flex flex-col gap-4">
+                {userPosts.map((post) => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    onPostUpdated={() => fetchUserPosts(profileUser.id)}
+                    onPostDeleted={() => fetchUserPosts(profileUser.id)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="glass-card p-12 text-center flex flex-col items-center justify-center gap-2 border-dashed border-gray-200">
+                <BookOpen className="h-8 w-8 text-gray-300" />
+                <span className="text-sm font-semibold text-gray-700">No educational posts published yet</span>
+                <p className="text-xs text-gray-400 max-w-sm">
+                  {isSelf
+                    ? 'Share study notes, tutorials, or insights with the Cognify learning community!'
+                    : 'This user has not created any educational posts yet.'}
+                </p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm flex flex-col items-center justify-center text-center gap-3">
+            <div className="h-12 w-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600">
+              <ShieldCheck className="h-6 w-6" />
             </div>
-          ) : userPosts.length > 0 ? (
-            <div className="flex flex-col gap-4">
-              {userPosts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  onPostUpdated={() => fetchUserPosts(profileUser.id)}
-                  onPostDeleted={() => fetchUserPosts(profileUser.id)}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="glass-card p-12 text-center flex flex-col items-center justify-center gap-2 border-dashed border-gray-200">
-              <BookOpen className="h-8 w-8 text-gray-300" />
-              <span className="text-sm font-semibold text-gray-700">No educational posts published yet</span>
-              <p className="text-xs text-gray-400 max-w-sm">
-                {isSelf
-                  ? 'Share study notes, tutorials, or insights with the Cognify learning community!'
-                  : 'This user has not created any educational posts yet.'}
+            <div>
+              <h3 className="text-sm font-bold text-gray-900">Platform Administrator</h3>
+              <p className="text-xs text-gray-500 mt-1 max-w-md">
+                This account is dedicated to platform governance, content moderation, and administrative oversight. Administrator accounts do not publish public educational posts.
               </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Followers / Following Modal List */}

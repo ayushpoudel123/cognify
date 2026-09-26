@@ -15,50 +15,37 @@ import {
   Trash2,
   Flag,
   ShieldAlert,
-  FolderPlus,
   RefreshCw,
   Eye,
   AlertTriangle,
 } from 'lucide-react';
-import { FlagPostModal } from '@/features/posts/components/FlagPostModal';
 
 export default function AdminPage() {
   const router = useRouter();
   const { user: currentUser, isLoading: authLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState<'users' | 'posts' | 'comments' | 'reports' | 'categories'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'posts' | 'comments' | 'reports'>('users');
   const [stats, setStats] = useState<any>(null);
   const [users, setUsers] = useState<any[]>([]);
   const [posts, setPosts] = useState<any[]>([]);
   const [comments, setComments] = useState<any[]>([]);
   const [reports, setReports] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [newCatName, setNewCatName] = useState('');
-  const [newCatDesc, setNewCatDesc] = useState('');
   const [loading, setLoading] = useState(true);
-
-  // Flag Post Modal State
-  const [flagModalOpen, setFlagModalOpen] = useState(false);
-  const [selectedPostToFlag, setSelectedPostToFlag] = useState<any>(null);
-  const [flagInitialReason, setFlagInitialReason] = useState<string | undefined>(undefined);
-  const [activeReportId, setActiveReportId] = useState<string | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [statsRes, usersRes, postsRes, commentsRes, reportsRes, catsRes]: any = await Promise.all([
+      const [statsRes, usersRes, postsRes, commentsRes, reportsRes]: any = await Promise.all([
         apiClient.get('/admin/stats'),
         apiClient.get('/admin/users'),
         apiClient.get('/admin/posts'),
         apiClient.get('/admin/comments'),
         apiClient.get('/admin/reports'),
-        apiClient.get('/posts/categories'),
       ]);
       setStats(statsRes.data);
       setUsers(usersRes.data || []);
       setPosts(postsRes.data || []);
       setComments(commentsRes.data || []);
       setReports(reportsRes.data || []);
-      setCategories(catsRes.data || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -85,25 +72,13 @@ export default function AdminPage() {
     }
   };
 
-  const handleUpdatePostStatus = async (postId: string, status: string, reason?: string) => {
+  const handleUpdatePostStatus = async (postId: string, status: string) => {
     try {
-      await apiClient.patch(`/admin/posts/${postId}/status`, { status, reason });
+      await apiClient.patch(`/admin/posts/${postId}/status`, { status });
       fetchData();
     } catch (err) {
       console.error(err);
     }
-  };
-
-  const handleFlagSuccess = async () => {
-    if (activeReportId) {
-      try {
-        await apiClient.patch(`/admin/reports/${activeReportId}/resolve`, { status: 'ACTIONED' });
-      } catch (err) {
-        console.error(err);
-      }
-      setActiveReportId(null);
-    }
-    fetchData();
   };
 
   const handleDeletePost = async (postId: string) => {
@@ -120,29 +95,6 @@ export default function AdminPage() {
     if (!confirm('Are you sure you want to delete this comment?')) return;
     try {
       await apiClient.delete(`/admin/comments/${commentId}`);
-      fetchData();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleCreateCategory = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCatName.trim()) return;
-    try {
-      await apiClient.post('/admin/categories', { name: newCatName, description: newCatDesc });
-      setNewCatName('');
-      setNewCatDesc('');
-      fetchData();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleDeleteCategory = async (catId: string) => {
-    if (!confirm('Are you sure you want to delete this category?')) return;
-    try {
-      await apiClient.delete(`/admin/categories/${catId}`);
       fetchData();
     } catch (err) {
       console.error(err);
@@ -208,9 +160,8 @@ export default function AdminPage() {
         <div className="bg-white rounded-2xl border border-gray-200 p-1.5 flex items-center gap-1 shadow-sm overflow-x-auto">
           <button
             onClick={() => setActiveTab('users')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition ${
-              activeTab === 'users' ? 'bg-primary text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
-            }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition ${activeTab === 'users' ? 'bg-primary text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+              }`}
           >
             <Users className="h-4 w-4" />
             <span>Manage Users ({users.length})</span>
@@ -218,9 +169,8 @@ export default function AdminPage() {
 
           <button
             onClick={() => setActiveTab('posts')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition ${
-              activeTab === 'posts' ? 'bg-primary text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
-            }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition ${activeTab === 'posts' ? 'bg-primary text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+              }`}
           >
             <FileText className="h-4 w-4" />
             <span>Post Moderation ({posts.length})</span>
@@ -228,9 +178,8 @@ export default function AdminPage() {
 
           <button
             onClick={() => setActiveTab('comments')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition ${
-              activeTab === 'comments' ? 'bg-primary text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
-            }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition ${activeTab === 'comments' ? 'bg-primary text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+              }`}
           >
             <MessageSquare className="h-4 w-4" />
             <span>Comments ({comments.length})</span>
@@ -238,22 +187,11 @@ export default function AdminPage() {
 
           <button
             onClick={() => setActiveTab('reports')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition ${
-              activeTab === 'reports' ? 'bg-primary text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
-            }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition ${activeTab === 'reports' ? 'bg-primary text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+              }`}
           >
             <ShieldAlert className="h-4 w-4" />
             <span>Reports ({reports.length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('categories')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition ${
-              activeTab === 'categories' ? 'bg-primary text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
-            }`}
-          >
-            <FolderPlus className="h-4 w-4" />
-            <span>Categories ({categories.length})</span>
           </button>
         </div>
 
@@ -289,11 +227,10 @@ export default function AdminPage() {
                       </td>
                       <td className="py-3 px-4">
                         <span
-                          className={`rounded-md px-2 py-0.5 font-semibold text-[11px] ${
-                            u.role === 'ADMIN'
+                          className={`rounded-md px-2 py-0.5 font-semibold text-[11px] ${u.role === 'ADMIN'
                               ? 'bg-amber-100 text-amber-800 border border-amber-200'
                               : 'bg-gray-100 text-gray-700 border border-gray-200'
-                          }`}
+                            }`}
                         >
                           {u.role}
                         </span>
@@ -313,11 +250,10 @@ export default function AdminPage() {
                         {u.role !== 'ADMIN' && (
                           <button
                             onClick={() => handleToggleUserStatus(u.id)}
-                            className={`px-3 py-1 rounded-lg font-semibold text-xs transition ${
-                              u.isActive
+                            className={`px-3 py-1 rounded-lg font-semibold text-xs transition ${u.isActive
                                 ? 'border border-red-200 text-red-600 hover:bg-red-50'
                                 : 'border border-emerald-200 text-emerald-600 hover:bg-emerald-50'
-                            }`}
+                              }`}
                           >
                             {u.isActive ? 'Deactivate' : 'Reactivate'}
                           </button>
@@ -348,13 +284,12 @@ export default function AdminPage() {
                 return (
                   <div
                     key={p.id}
-                    className={`p-4 rounded-xl border flex flex-col sm:flex-row items-start justify-between gap-4 transition ${
-                      isTakenDown
+                    className={`p-4 rounded-xl border flex flex-col sm:flex-row items-start justify-between gap-4 transition ${isTakenDown
                         ? 'bg-red-50/50 border-red-200'
                         : isFlagged
-                        ? 'bg-amber-50/50 border-amber-200'
-                        : 'bg-gray-50 border-gray-200'
-                    }`}
+                          ? 'bg-amber-50/50 border-amber-200'
+                          : 'bg-gray-50 border-gray-200'
+                      }`}
                   >
                     <div className="flex flex-col gap-1 min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -363,24 +298,18 @@ export default function AdminPage() {
                           {new Date(p.createdAt).toLocaleDateString()}
                         </span>
                         <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                            isTakenDown
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${isTakenDown
                               ? 'bg-red-100 text-red-700 border border-red-200'
                               : isFlagged
-                              ? 'bg-amber-100 text-amber-700 border border-amber-200'
-                              : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-                          }`}
+                                ? 'bg-amber-100 text-amber-700 border border-amber-200'
+                                : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                            }`}
                         >
                           {p.status}
                         </span>
                       </div>
                       <h4 className="text-sm font-bold text-gray-900">{p.title}</h4>
                       <p className="text-xs text-gray-600 line-clamp-2">{p.content}</p>
-                      {isFlagged && p.flagReason && (
-                        <div className="mt-1 inline-block rounded-lg border border-amber-200 bg-amber-100/70 px-2.5 py-1 text-[11px] font-medium text-amber-900">
-                          ⚠️ <strong>Flag Reason:</strong> {p.flagReason}
-                        </div>
-                      )}
                     </div>
 
                     <div className="flex items-center gap-2 flex-wrap shrink-0">
@@ -395,16 +324,11 @@ export default function AdminPage() {
                       ) : (
                         <>
                           <button
-                            onClick={() => {
-                              setSelectedPostToFlag(p);
-                              setFlagInitialReason(undefined);
-                              setActiveReportId(null);
-                              setFlagModalOpen(true);
-                            }}
-                            className="flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-100 transition shadow-sm"
+                            onClick={() => handleUpdatePostStatus(p.id, 'FLAGGED')}
+                            className="flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-100 transition"
                           >
                             <Flag className="h-3.5 w-3.5" />
-                            <span>Flag with Reason</span>
+                            <span>Flag</span>
                           </button>
                           <button
                             onClick={() => handleUpdatePostStatus(p.id, 'TAKEN_DOWN')}
@@ -479,60 +403,15 @@ export default function AdminPage() {
             {reports.length > 0 ? (
               <div className="flex flex-col gap-3">
                 {reports.map((r) => (
-                  <div key={r.id} className="p-4 rounded-xl border border-gray-200 bg-gray-50 flex flex-col sm:flex-row items-start justify-between gap-4">
-                    <div className="flex flex-col gap-1.5 min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
+                  <div key={r.id} className="p-4 rounded-xl border border-gray-200 bg-gray-50 flex items-start justify-between gap-4">
+                    <div className="flex flex-col gap-1 min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
                         <span className="text-xs font-semibold text-gray-900">Reporter: @{r.reporter?.username}</span>
                         <span className="text-[10px] px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold uppercase">{r.reason}</span>
-                        <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase ${
-                          r.status === 'ACTIONED' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
-                          r.status === 'DISMISSED' ? 'bg-gray-200 text-gray-700' : 'bg-amber-50 text-amber-700 border border-amber-200'
-                        }`}>{r.status}</span>
                       </div>
-
-                      {r.targetType === 'POST' && (
-                        <div className="p-2.5 rounded-lg bg-white border border-gray-200 text-xs">
-                          <span className="font-semibold text-primary block">{r.post?.title || `Target Post (${r.targetId})`}</span>
-                          {r.post?.author?.username && (
-                            <span className="text-[10px] text-gray-400">Author: @{r.post.author.username}</span>
-                          )}
-                        </div>
-                      )}
-
-                      <p className="text-xs text-gray-700 mt-0.5 leading-relaxed">
-                        <strong>Details:</strong> {r.details || 'No additional details specified.'}
-                      </p>
+                      <p className="text-xs text-gray-700 mt-1">{r.details || 'No details specified.'}</p>
                     </div>
-
-                    <div className="flex items-center gap-2 shrink-0">
-                      {r.targetType === 'POST' && r.status !== 'ACTIONED' && (
-                        <button
-                          onClick={() => {
-                            const targetPost = r.post || { id: r.targetId, title: 'Reported Post', author: null };
-                            setSelectedPostToFlag(targetPost);
-                            setFlagInitialReason(`${r.reason}: ${r.details || 'Violates community guidelines'}`);
-                            setActiveReportId(r.id);
-                            setFlagModalOpen(true);
-                          }}
-                          className="flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-100 transition shadow-sm"
-                        >
-                          <Flag className="h-3.5 w-3.5" />
-                          <span>Flag Post with Reason</span>
-                        </button>
-                      )}
-
-                      {r.status === 'PENDING' && (
-                        <button
-                          onClick={async () => {
-                            await apiClient.patch(`/admin/reports/${r.id}/resolve`, { status: 'DISMISSED' });
-                            fetchData();
-                          }}
-                          className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition"
-                        >
-                          <span>Dismiss</span>
-                        </button>
-                      )}
-                    </div>
+                    <span className="text-xs font-semibold text-gray-500">{r.status}</span>
                   </div>
                 ))}
               </div>
@@ -541,72 +420,7 @@ export default function AdminPage() {
             )}
           </div>
         )}
-
-        {/* Categories Tab */}
-        {activeTab === 'categories' && (
-          <div className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col gap-6 shadow-sm">
-            <div className="flex flex-col gap-3">
-              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
-                <FolderPlus className="h-4 w-4 text-primary" />
-                <span>Create New Category</span>
-              </h3>
-
-              <form onSubmit={handleCreateCategory} className="flex flex-col sm:flex-row gap-3">
-                <input
-                  type="text"
-                  required
-                  placeholder="Category Name (e.g. Artificial Intelligence)"
-                  value={newCatName}
-                  onChange={(e) => setNewCatName(e.target.value)}
-                  className="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-primary focus:bg-white focus:outline-none"
-                />
-                <input
-                  type="text"
-                  placeholder="Description (optional)"
-                  value={newCatDesc}
-                  onChange={(e) => setNewCatDesc(e.target.value)}
-                  className="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-primary focus:bg-white focus:outline-none"
-                />
-                <button
-                  type="submit"
-                  className="rounded-xl bg-primary px-5 py-2.5 text-xs font-semibold text-white hover:bg-primary-hover transition shadow-sm shrink-0"
-                >
-                  Add Category
-                </button>
-              </form>
-            </div>
-
-            <div className="flex flex-col gap-3 border-t border-gray-100 pt-5">
-              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Existing Categories</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {categories.map((cat) => (
-                  <div key={cat.id} className="p-3 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-between">
-                    <span className="text-xs font-semibold text-gray-900">{cat.name}</span>
-                    <button
-                      onClick={() => handleDeleteCategory(cat.id)}
-                      className="p-1 rounded text-gray-400 hover:text-red-600 transition"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
-
-      {/* Flag Post Modal */}
-      <FlagPostModal
-        isOpen={flagModalOpen}
-        onClose={() => {
-          setFlagModalOpen(false);
-          setActiveReportId(null);
-        }}
-        post={selectedPostToFlag}
-        initialReason={flagInitialReason}
-        onFlagSuccess={handleFlagSuccess}
-      />
     </div>
   );
 }

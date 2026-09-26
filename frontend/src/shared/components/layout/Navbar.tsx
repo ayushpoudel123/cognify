@@ -15,6 +15,7 @@ export function Navbar() {
   const [searchQuery, setSearchQuery] = useState('');
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifPopover, setShowNotifPopover] = useState(false);
+  const isAdmin = user?.role === 'ADMIN';
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
@@ -61,35 +62,44 @@ export function Navbar() {
     <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white shadow-sm">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 gap-4">
         {/* Brand Logo */}
-        <Link href="/" className="flex items-center gap-2 font-bold text-lg tracking-tight shrink-0">
+        <Link href={isAdmin ? "/admin" : "/"} className="flex items-center gap-2 font-bold text-lg tracking-tight shrink-0">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
             <BookOpen className="h-5 w-5" />
           </div>
           <span className="text-primary hidden sm:inline">Cognify</span>
+          {isAdmin && (
+            <span className="hidden sm:inline-block rounded-md bg-amber-100 border border-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-800 uppercase tracking-wider">
+              Admin
+            </span>
+          )}
         </Link>
 
-        {/* Global Search Bar */}
-        <form onSubmit={handleSearch} className="relative hidden md:flex flex-1 max-w-md items-center">
-          <Search className="absolute left-3.5 h-4 w-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search educational topics, users, skills..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-full border border-gray-200 bg-gray-100 pl-10 pr-4 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/10 transition"
-          />
-        </form>
+        {/* Global Search Bar (Hidden for Admins) */}
+        {!isAdmin && (
+          <form onSubmit={handleSearch} className="relative hidden md:flex flex-1 max-w-md items-center">
+            <Search className="absolute left-3.5 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search educational topics, users, skills..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full rounded-full border border-gray-200 bg-gray-100 pl-10 pr-4 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/10 transition"
+            />
+          </form>
+        )}
 
         {/* User Right Menu */}
         <div className="flex items-center gap-2 shrink-0">
           {user ? (
             <>
-              <Link
-                href="/chat"
-                className="flex h-9 w-9 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 transition"
-              >
-                <MessageSquare className="h-5 w-5" />
-              </Link>
+              {!isAdmin && (
+                <Link
+                  href="/chat"
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 transition"
+                >
+                  <MessageSquare className="h-5 w-5" />
+                </Link>
+              )}
 
               {/* Notifications Bell */}
               <div className="relative">

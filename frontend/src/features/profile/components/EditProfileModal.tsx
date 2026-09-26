@@ -28,6 +28,7 @@ export function EditProfileModal({
   const [website, setWebsite] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const isAdmin = profileUser?.role === 'ADMIN';
 
   useEffect(() => {
     if (profileUser) {
@@ -103,7 +104,11 @@ export function EditProfileModal({
           </div>
           <div>
             <h2 className="text-lg font-bold text-gray-900 leading-tight">Edit Profile</h2>
-            <p className="text-xs text-gray-500">Update your public identity and profile details</p>
+            <p className="text-xs text-gray-500">
+              {isAdmin
+                ? 'Update your administrator identity and details'
+                : 'Update your public identity and profile details'}
+            </p>
           </div>
         </div>
 
@@ -157,33 +162,39 @@ export function EditProfileModal({
           {/* Bio */}
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-              Bio
+              {isAdmin ? 'Administrative Bio / Responsibilities' : 'Bio'}
             </label>
             <textarea
               rows={3}
-              placeholder="Tell others about what you are learning or teaching..."
+              placeholder={
+                isAdmin
+                  ? 'Administrator overview, responsibilities, or contact details...'
+                  : 'Tell others about what you are learning or teaching...'
+              }
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm text-gray-900 placeholder-gray-400 focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/10 transition resize-none"
             />
           </div>
 
-          {/* Education / Role */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-              Education / Headline
-            </label>
-            <div className="relative">
-              <BookOpen className="absolute left-3.5 top-3 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="e.g. CS Student @ Stanford or ML Educator"
-                value={education}
-                onChange={(e) => setEducation(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/10 transition"
-              />
+          {/* Education / Headline (Hidden for Admin) */}
+          {!isAdmin && (
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                Education / Headline
+              </label>
+              <div className="relative">
+                <BookOpen className="absolute left-3.5 top-3 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="e.g. CS Student @ Stanford or ML Educator"
+                  value={education}
+                  onChange={(e) => setEducation(e.target.value)}
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/10 transition"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Website */}
           <div>

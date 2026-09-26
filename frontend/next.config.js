@@ -1,12 +1,27 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    workerThreads: false,
+    cpus: 1,
+  },
   images: {
+    domains: ['images.unsplash.com', 'plus.unsplash.com', 'unsplash.com', 'localhost'],
     remotePatterns: [
       {
         protocol: 'http',
         hostname: 'localhost',
         port: '4000',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'plus.unsplash.com',
         pathname: '/**',
       },
       {

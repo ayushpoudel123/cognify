@@ -32,12 +32,19 @@ docker compose exec -T backend npm run seed
 
 After seeding, the following accounts are available:
 
-| Role  | Email                  | Password          |
-|-------|------------------------|-------------------|
-| Admin | admin@cognify.com      | AdminPassword123! |
-| User  | alice@example.com      | Password123!      |
-| User  | bob@example.com        | Password123!      |
-| User  | carol@example.com      | Password123!      |
+| Role  | Username | Email                  | Password          | Specialty |
+|-------|----------|------------------------|-------------------|-----------|
+| Admin | admin | admin@cognify.com      | AdminPassword123! | Lead Administrator |
+| User  | dr_elena_ai | elena.ai@cognify.edu   | Password123!      | AI Research & LLMs |
+| User  | marcus_code | marcus.dev@cognify.edu | Password123!      | Distributed Systems & Go |
+| User  | sophia_design | sophia.ux@cognify.edu  | Password123!      | UI/UX & Design Systems |
+| User  | prof_david_math | david.math@cognify.edu | Password123!      | Mathematics & Linear Algebra |
+| User  | priya_data | priya.data@cognify.edu | Password123!      | Data Science & Analytics |
+| User  | alex_security | alex.sec@cognify.edu   | Password123!      | Cybersecurity & Zero Trust |
+| User  | dr_hannah_bio | hannah.bio@cognify.edu | Password123!      | Computational Biology |
+| User  | leo_frontend | leo.web@cognify.edu    | Password123!      | Next.js & Frontend |
+| User  | zara_neuro | zara.neuro@cognify.edu | Password123!      | Cognitive Neuroscience |
+| User  | kenji_cloud | kenji.cloud@cognify.edu| Password123!      | DevOps & Cloud/Docker |
 
 ---
 

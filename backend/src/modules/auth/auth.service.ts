@@ -28,8 +28,9 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto) {
+    const normalizedEmail = registerDto.email.toLowerCase();
     const existingEmail = await this.userRepository.findOne({
-      where: { email: registerDto.email },
+      where: { email: normalizedEmail },
     });
     if (existingEmail) {
       throw new ConflictException('Email is already registered');
@@ -45,7 +46,7 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(registerDto.password, 10);
 
     const user = this.userRepository.create({
-      email: registerDto.email,
+      email: normalizedEmail,
       username: registerDto.username,
       passwordHash,
       role: UserRole.USER,
@@ -66,8 +67,9 @@ export class AuthService {
   }
 
   async adminRegister(registerDto: RegisterDto) {
+    const normalizedEmail = registerDto.email.toLowerCase();
     const existingEmail = await this.userRepository.findOne({
-      where: { email: registerDto.email },
+      where: { email: normalizedEmail },
     });
     if (existingEmail) {
       throw new ConflictException('Email is already registered');
@@ -83,7 +85,7 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(registerDto.password, 10);
 
     const user = this.userRepository.create({
-      email: registerDto.email,
+      email: normalizedEmail,
       username: registerDto.username,
       passwordHash,
       role: UserRole.ADMIN,
@@ -104,10 +106,11 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
+    const normalizedIdentifier = loginDto.emailOrUsername.toLowerCase();
     const user = await this.userRepository.findOne({
       where: [
-        { email: loginDto.emailOrUsername },
-        { username: loginDto.emailOrUsername },
+        { email: normalizedIdentifier },
+        { username: normalizedIdentifier },
       ],
       select: ['id', 'email', 'username', 'passwordHash', 'role', 'isActive'],
     });
@@ -137,10 +140,11 @@ export class AuthService {
   }
 
   async adminLogin(loginDto: LoginDto) {
+    const normalizedIdentifier = loginDto.emailOrUsername.toLowerCase();
     const user = await this.userRepository.findOne({
       where: [
-        { email: loginDto.emailOrUsername },
-        { username: loginDto.emailOrUsername },
+        { email: normalizedIdentifier },
+        { username: normalizedIdentifier },
       ],
       select: ['id', 'email', 'username', 'passwordHash', 'role', 'isActive'],
     });
